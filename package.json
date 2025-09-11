@@ -1,0 +1,9 @@
+{
+  "name": "salamat-pwa",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "rss-parser": "^3.12.0"
+  }
+}
