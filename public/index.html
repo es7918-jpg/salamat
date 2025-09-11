@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="fa" dir="rtl">
   <head>
@@ -11,6 +12,7 @@
     <style>
       html, body, #root { height: 100%; }
       body { font-family: Vazirmatn, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+
       .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
     </style>
   </head>
@@ -27,6 +29,7 @@
         family: 'mehrnews',
       };
       const CATEGORIES = [
+
         { key:'mental', title:'سلامت روان', color:'from-sky-500 to-cyan-500' },
         { key:'nutrition', title:'تغذیه', color:'from-emerald-500 to-lime-500' },
         { key:'dental', title:'دهان و دندان', color:'from-indigo-500 to-violet-500' },
@@ -39,6 +42,7 @@
         const res = await fetch(`/api/aparat?channel=${encodeURIComponent(channel)}`);
         if(!res.ok) throw new Error('fetch failed');
         const data = await res.json();
+
         return (data.items||[]).map(it=>({id:it.hash,type:'video',title:it.title,caption:it.description||'',aparat:it.embed,cover:it.cover}));
       }
 
@@ -49,6 +53,7 @@
         const [catPosts,setCatPosts]=React.useState({});
         const [loading,setLoading]=React.useState(false);
         const [q,setQ]=React.useState('');
+
         const [searchPosts,setSearchPosts]=React.useState([]);
         const [searchLoading,setSearchLoading]=React.useState(false);
 
@@ -60,7 +65,9 @@
           (async()=>{
             setLoading(true);
             try{
-              const keys=CATEGORIES.map(c=>c.key);
+              const 
+
+keys=CATEGORIES.map(c=>c.key);
               const all=await Promise.all(keys.map(async k=>{
                 const ch=CHANNELS[k]; if(!ch) return [];
                 const items=await fetchAparat(ch);
@@ -71,10 +78,11 @@
           })();
         },[tab]);
 
-        // When opening Search first time, ensure we have a global list
+        // First time opening Search: load all once
         React.useEffect(()=>{
           if(tab!=='search' || searchPosts.length) return;
           (async()=>{
+
             setSearchLoading(true);
             try{
               const keys=CATEGORIES.map(c=>c.key);
@@ -83,14 +91,18 @@
                 const items=await fetchAparat(ch);
                 return items.map(p=>({...p,category:k}));
               }));
-              const flat = all.flat();
-              setSearchPosts(flat);
+              setSearchPosts(all.flat());
             } finally{ setSearchLoading(false); }
           })();
         },[tab]);
 
         const filtered = q
-          ? searchPosts.filter(p => (p.title + ' ' + (p.caption||'')).toLowerCase().includes(q.toLowerCase()))
+          ? searchPosts.filter(p =>
+              (p.title + ' ' + (p.caption || ''))
+
+                .toLowerCase()
+                .includes(q.toLowerCase())
+            )
           : [];
 
         return React.createElement('div',{className:'flex flex-col h-full max-w-md mx-auto bg-white shadow-sm'},
@@ -100,6 +112,7 @@
               React.createElement('div',{className:'text-xs text-slate-500'},'PWA')
             )
           ),
+
           React.createElement('main',{className:'flex-1 overflow-y-auto pb-20'},
             tab==='home'&&React.createElement(Home,{activeCat,setActiveCat,catPosts,setCatPosts}),
             tab==='explore'&&React.createElement(Explore,{posts:explorePosts,loading}),
@@ -107,6 +120,7 @@
             tab==='about'&&React.createElement(About,null),
           ),
           React.createElement('nav',{className:'safe-bottom fixed bottom-0 inset-x-0 border-t border-slate-200 bg-white'},
+
             React.createElement('div',{className:'grid grid-cols-4 max-w-md mx-auto'},
               React.createElement(BtnTab,{label:'خانه',active:tab==='home',onClick:()=>{setTab('home');setActiveCat(null);}}),
               React.createElement(BtnTab,{label:'اکسپلور',active:tab==='explore',onClick:()=>setTab('explore')}),
@@ -117,12 +131,15 @@
         );
       }
 
-      function BtnTab({label,active,onClick}){return React.createElement('button',{onClick,className:cx('py-3 text-sm',active?'text-sky-600 font-semibold':'text-slate-600')},label);}
+      function BtnTab({label,active,onClick})
+
+{return React.createElement('button',{onClick,className:cx('py-3 text-sm',active?'text-sky-600 font-semibold':'text-slate-600')},label);}
       function CategoryBadge({cat}){const c=CATEGORIES.find(x=>x.key===cat);return React.createElement('span',{className:cx('inline-block text-xs rounded-full px-2 py-0.5 text-white bg-gradient-to-r',c?.color||'from-slate-500 to-slate-700')},c?.title||'دسته‌بندی');}
 
       function PostCard({post}){
         return React.createElement('article',{className:'rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm'},
           React.createElement('div',{className:'aspect-square w-full overflow-hidden bg-black/5 flex items-center justify-center'},
+
             React.createElement('iframe',{src:post.aparat,className:'w-full h-full',allowFullScreen:true})
           ),
           React.createElement('div',{className:'p-3 space-y-1'},
@@ -133,6 +150,7 @@
             React.createElement('p',{className:'text-xs text-slate-600 line-clamp-2'},post.caption||'')
           )
         );
+
       }
       function PostGrid({posts}){return React.createElement('div',{className:'grid grid-cols-2 gap-2'},posts.map(p=>React.createElement(PostCard,{key:p.id,post:p})));}
       function PostRow({post}){
@@ -140,7 +158,9 @@
           React.createElement('div',{className:'w-24 h-24 overflow-hidden rounded-lg bg-black/5 flex items-center justify-center'},'ویدئو'),
           React.createElement('div',{className:'flex-1'},
             React.createElement('div',{className:'flex items-center justify-between'},
-              React.createElement('h4',{className:'font-bold'},post.title),
+              React.createElement('h4',
+
+{className:'font-bold'},post.title),
               post.category?React.createElement(CategoryBadge,{cat:post.category}):null
             ),
             React.createElement('p',{className:'text-sm text-slate-600 line-clamp-2'},post.caption||''),
@@ -150,6 +170,7 @@
                 React.createElement('iframe',{src:post.aparat,className:'w-full h-full',allowFullScreen:true})
               )
             )
+
           )
         );
       }
@@ -160,7 +181,9 @@
           return React.createElement('section',{className:'p-4 space-y-4'},
             React.createElement('h2',{className:'font-bold text-lg'},'دسته‌ها'),
             React.createElement('div',{className:'grid grid-cols-2 gap-3'},
-              CATEGORIES.map(cat=>React.createElement('button',{key:cat.key,onClick:()=>setActiveCat(cat.key),className:cx('rounded-2xl p-4 text-right text-white shadow-lg bg-gradient-to-br',cat.color)},
+              CATEGORIES.map(cat=>React.createEleme
+
+nt('button',{key:cat.key,onClick:()=>setActiveCat(cat.key),className:cx('rounded-2xl p-4 text-right text-white shadow-lg bg-gradient-to-br',cat.color)},
                 React.createElement('div',{className:'text-sm opacity-90'},'ورود به'),
                 React.createElement('div',{className:'text-xl font-extrabold mt-1'},cat.title)
               ))
@@ -171,6 +194,7 @@
         const ch=CHANNELS[activeCat];
         const [loading,setLoading]=React.useState(false);
         const posts=catPosts[activeCat]||[];
+
         React.useEffect(()=>{
           if(!ch) return;
           if(posts.length) return;
@@ -181,6 +205,7 @@
             React.createElement('button',{className:'px-3 py-1.5 rounded-full bg-slate-100 text-slate-700',onClick:()=>setActiveCat(null)},'← بازگشت'),
             React.createElement('h2',{className:'text-xl font-extrabold'},cat.title)
           ),
+
           !ch ? React.createElement('p',{className:'text-rose-600'},'نام کانال برای این دسته تنظیم نشده است.')
               : (loading ? React.createElement('p',{className:'text-slate-500'},'در حال بارگذاری…')
                         : (posts.length ? React.createElement(PostList,{posts}) : React.createElement('p',{className:'text-slate-500'},'ویدئویی یافت نشد.')))
@@ -190,7 +215,9 @@
       function Explore({posts,loading}){
         return React.createElement('section',{className:'p-4'},
           React.createElement('h2',{className:'font-bold text-lg mb-3'},'اکسپلور (همه دسته‌ها باهم)'),
-          loading ? React.createElement('p',{className:'text-slate-500'},'در حال بارگذاری…')
+          loading ? React.createElement('p',{className:'text-slate-500'},'در حال 
+
+بارگذاری…')
                   : (posts.length?React.createElement(PostGrid,{posts}):React.createElement('p',{className:'text-slate-500'},'فعلاً پستی نیست.'))
         );
       }
@@ -201,7 +228,9 @@
             React.createElement('input',{
               value:q,onChange:e=>setQ(e.target.value),
               placeholder:'جستجو در عنوان و کپشن…',
-              className:'w-full rounded-2xl border border-slate-200 px-4 py-3 pr-10 focus:outline-none focus:ring-4 focus:ring-sky-100'
+              className:'w-full rounded-2xl border border-slate-200 px-4 py-3 pr-10 
+
+focus:outline-none focus:ring-4 focus:ring-sky-100'
             }),
             React.createElement('div',{className:'absolute right-3 top-1/2 -translate-y-1/2 text-slate-400'},
               React.createElement('svg',{className:'w-5 h-5',fill:'none',viewBox:'0 0 24 24',stroke:'currentColor'},
@@ -210,9 +239,11 @@
             )
           ),
           searchLoading ? React.createElement('p',{className:'text-slate-500'},'در حال بارگذاری…')
-                        : (q ? (filtered.length ? React.createElement(PostList,{posts:filtered})
+                        : (q ? (filtered.length ? React.createElement(PostList,
+
+{posts:filtered})
                                                 : React.createElement('p',{className:'text-slate-500'},'چیزی پیدا نشد.'))
-                               : React.createElement('p',{className:'text-slate-500'},'کلیدواژه بنویسید…'))
+                             : React.createElement('p',{className:'text-slate-500'},'کلیدواژه بنویسید…'))
         );
       }
 
@@ -220,11 +251,14 @@
         return React.createElement('section',{className:'p-6 space-y-3'},
           React.createElement('h2',{className:'text-xl font-extrabold'},'درباره ما'),
           React.createElement('p',{className:'text-slate-700 leading-8'},'وب‌اپ پویا با RSS یا استخراج کانال آپارات. جستجو روی عنوان و کپشن فعال است.'),
-          React.createElement('div',{className:'text-sm text-slate-500'},'نسخه با تب جستجو – سرورلس + PWA.')
+          React.createElement('div',
+
+{className:'text-sm text-slate-500'},'نسخه با تب جستجو – سرورلس + PWA.')
         );
       }
 
-      const root=ReactDOM.createRoot(document.getElementById('root'));root.render(React.createElement(App));
+      const root=ReactDOM.createRoot(document.getElementById('root'));
+      root.render(React.createElement(App));
     </script>
   </body>
 </html>
