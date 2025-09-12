@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>شبکه سلامت – نسخه ایتا</title>
+  <title>شبکه سلامت – نسخه ایتا (دیباگ)</title>
   <meta name="theme-color" content="#0ea5e9" />
   <style>
     :root{--bg:#f6f7fb;--fg:#0f172a;--muted:#64748b;--card:#fff;--border:#e5e7eb;--brand:#0284c7}
@@ -29,13 +29,15 @@
     .tabbtn{padding:12px;border:none;background:transparent;cursor:pointer}
     .tabbtn.active{color:var(--brand);font-weight:700}
     .catgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    /* modal */
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:16px}
     .modal.show{display:flex}
     .modal-card{max-width:760px;width:100%;background:#fff;border-radius:14px;overflow:hidden}
     .modal-media{width:100%;background:#000}
     .modal-body{padding:14px}
     a{color:#0369a1;text-decoration:none}
+    /* باکس خطا/لاگ */
+    #debug{position:fixed;left:8px;bottom:72px;right:8px;max-height:38vh;overflow:auto;background:#fff;border:1px solid #fecaca;border-radius:10px;padding:8px;display:none}
+    #debug pre{white-space:pre-wrap;margin:0;font-size:12px;line-height:1.6;color:#991b1b}
   </style>
 </head>
 <body>
@@ -50,6 +52,8 @@
     <p class="muted">در حال آماده‌سازی…</p>
   </main>
 
+  <div id="debug"><pre id="dbgpre"></pre></div>
+
   <nav class="bottom">
     <div class="tabs">
       <button id="tab-home"    class="tabbtn active">خانه</button>
@@ -58,7 +62,6 @@
     </div>
   </nav>
 
-  <!-- Modal -->
   <div id="modal" class="modal" aria-hidden="true">
     <div class="modal-card">
       <div id="modalMedia" class="modal-media"></div>
@@ -69,16 +72,26 @@
       </div>
     </div>
   </div>
-
   <script>
   (function () {
-    // ---- کانال هر دسته (فعلاً همه یکسان؛ بعداً تغییر بده) ----
+    // ---- گزارشگر خطا روی صفحه ----
+    function dbg(msg){
+      var box=document.getElementById('debug'), pre=document.getElementById('dbgpre');
+      box.style.display='block'; pre.textContent += msg + "\n";
+    }
+    window.onerror = function(message, source, lineno, colno, error){
+      dbg('JS Error: ' + message + ' @ ' + (source||'') + ':' + (lineno||'?'));
+    };
+
+    dbg('INIT: script loaded');
+
+    // ---- کانال‌ها (فعلاً همه یکی) ----
     var CHANNELS = {
-      mental:   'bedasht_ravan', // سلامت روان
-      nutrition:'bedasht_ravan', // تغذیه
-      dental:   'bedasht_ravan', // دهان و دندان
-      diseases: 'bedasht_ravan', // بیماری‌ها
-      family:   'bedasht_ravan'  // سلامت خانواده
+      mental:   'bedasht_ravan',
+      nutrition:'bedasht_ravan',
+      dental:   'bedasht_ravan',
+      diseases: 'bedasht_ravan',
+      family:   'bedasht_ravan'
     };
     var CATEGORIES = [
       { key:'mental',    title:'سلامت روان',    pill:'sky'   },
@@ -94,7 +107,7 @@
     function fetchText(url){
       return new Promise(function(resolve,reject){
         var x=new XMLHttpRequest(); x.open('GET',url,true);
-        x.onreadystatechange=function(){ if(x.readyState===4){ if(x.status>=200&&x.status<300) resolve(x.responseText); else reject(new Error('GET '+url+' -> '+x.status)); } };
+        x.onreadystatechange=function(){ if(x.readyState===4){ if(x.status>=200&&x.status<300){ resolve(x.responseText); } else { reject(new Error('GET '+url+' -> '+x.status)); } } };
         x.send();
       });
     }
@@ -138,70 +151,192 @@
       });
     }
 
+    // --- نسخه با فال‌بک نمایی برای پیدا کردن آخرین پست ---
     function fetchChannelLatest(slug, count){
-  count = count || 16;
+      count = count || 16;
+      dbg('FETCH: try list for '+slug);
 
-  // مرحله 1: تلاش با استخراج ID از صفحات /s و /
-  return Promise.allSettled([
-    fetchText('https://r.jina.ai/https://eitaa.com/s/'+encodeURIComponent(slug)),
-    fetchText('https://r.jina.ai/https://eitaa.com/'+encodeURIComponent(slug))
-  ]).then(function(all){
-    var html1 = all[0].status==='fulfilled' ? all[0].value : '';
-    var html2 = all[1].status==='fulfilled' ? all[1].value : '';
-    var ids = uniq( extractIdsFromHtml(html1, slug).concat( extractIdsFromHtml(html2, slug) ) )
-               .sort(byDesc)
-               .slice(0, count);
+      return Promise.allSettled([
+        fetchText('https://r.jina.ai/https://eitaa.com/s/'+encodeURIComponent(slug)),
+        fetchText('https://r.jina.ai/https://eitaa.com/'+encodeURIComponent(slug))
+      ]).then(function(all){
+        var html1 = all[0].status==='fulfilled' ? all[0].value : '';
+        var html2 = all[1].status==='fulfilled' ? all[1].value : '';
+        var ids = uniq( extractIdsFromHtml(html1, slug).concat( extractIdsFromHtml(html2, slug) ) )
+                   .sort(byDesc)
+                   .slice(0, count);
 
-    if(ids.length) {
-      return mapLimit(ids, 6, function(ID){
-        var url='https://r.jina.ai/https://eitaa.com/'+encodeURIComponent(slug)+'/'+ID;
-        return fetchText(url).then(function(html){
-          if(!html || html.length<200) return null;
-          var meta=parsePostHtml(html);
-          return { id:ID, slug:slug, title:'پست #'+ID, text:meta.text, cover:meta.cover, link:'https://eitaa.com/'+slug+'/'+ID };
-        });
-      }).then(function(arr){ return (arr||[]).filter(Boolean).sort(byDescId); });
-    }
+        if(ids.length){
+          dbg('FETCH: list extracted '+ids.length+' ids for '+slug);
+          return mapLimit(ids, 6, function(ID){
+            var url='https://r.jina.ai/https://eitaa.com/'+encodeURIComponent(slug)+'/'+ID;
+            return fetchText(url).then(function(html){
+              if(!html || html.length<200) return null;
+              var meta=parsePostHtml(html);
+              return { id:ID, slug:slug, title:'پست #'+ID, text:meta.text, cover:meta.cover, link:'https://eitaa.com/'+slug+'/'+ID };
+            });
+          }).then(function(arr){ return (arr||[]).filter(Boolean).sort(byDescId); });
+        }
 
-    // مرحله 2: فال‌بکِ سریع – پیدا کردن آخرین ID با پروب نمایی
-    function probe(id){
-      var url='https://r.jina.ai/https://eitaa.com/'+encodeURIComponent(slug)+'/'+id;
-      return fetchText(url).then(function(html){ return (html && html.length>300); })
-                           .catch(function(){ return false; });
-    }
-
-    // 2-الف: بالا رفتن نمایی تا جایی که «نیست»
-    var hi = 1;
-    function grow(){
-      return probe(hi).then(function(exists){
-        if(exists){ hi = hi*2; return grow(); }
-        // hi جایی‌ست که دیگر نیست؛ پس بین hi/2 و hi یک باینری سرچ می‌کنیم
-        var lo = Math.floor(hi/2);
-        function bin(){
-          if(lo+1 >= hi) return lo; // lo آخرین پست موجود
-          var mid = Math.floor((lo+hi)/2);
-          return probe(mid).then(function(ex){
-            if(ex) { lo = mid; } else { hi = mid; }
+        // فال‌بک: کشف آخرین ID
+        dbg('FETCH: fallback probing for '+slug);
+        function probe(id){
+          var url='https://r.jina.ai/https://eitaa.com/'+encodeURIComponent(slug)+'/'+id;
+          return fetchText(url).then(function(html){ return (html && html.length>300); })
+                               .catch(function(){ return false; });
+        }
+        var hi = 1;
+        function grow(){
+          return probe(hi).then(function(exists){
+            if(exists){ hi = hi*2; return grow(); }
+            var lo = Math.floor(hi/2);
+            function bin(){
+              if(lo+1 >= hi) return lo;
+              var mid = Math.floor((lo+hi)/2);
+              return probe(mid).then(function(ex){
+                if(ex) { lo = mid; } else { hi = mid; }
+                return bin();
+              });
+            }
             return bin();
           });
         }
-        return bin();
+
+        return grow().then(function(lastId){
+          dbg('FETCH: last id ~ '+lastId+' for '+slug);
+          if(!lastId || lastId<1) return [];
+          var want = []; for(var i=lastId; i>0 && want.length<count; i--) want.push(i);
+          return mapLimit(want, 6, function(ID){
+            var url='https://r.jina.ai/https://eitaa.com/'+encodeURIComponent(slug)+'/'+ID;
+            return fetchText(url).then(function(html){
+              if(!html || html.length<200) return null;
+              var meta=parsePostHtml(html);
+              return { id:ID, slug:slug, title:'پست #'+ID, text:meta.text, cover:meta.cover, link:'https://eitaa.com/'+slug+'/'+ID };
+            }).catch(function(){ return null; });
+          }).then(function(arr){ return (arr||[]).filter(Boolean).sort(byDescId); });
+        });
       });
     }
 
-    return grow().then(function(lastId){
-      if(!lastId || lastId<1) return [];
-      // فقط نزدیک آخرین‌ها را می‌گیریم
-      var want = [];
-      for(var i=lastId; i>0 && want.length<count; i--) want.push(i);
-      return mapLimit(want, 6, function(ID){
-        var url='https://r.jina.ai/https://eitaa.com/'+encodeURIComponent(slug)+'/'+ID;
-        return fetchText(url).then(function(html){
-          if(!html || html.length<200) return null;
-          var meta=parsePostHtml(html);
-          return { id:ID, slug:slug, title:'پست #'+ID, text:meta.text, cover:meta.cover, link:'https://eitaa.com/'+slug+'/'+ID };
-        }).catch(function(){ return null; });
-      }).then(function(arr){ return (arr||[]).filter(Boolean).sort(byDescId); });
-    });
-  });
-}
+    // ---- UI ----
+    var app = qs('#app');
+    var tabHome=qs('#tab-home'), tabExplore=qs('#tab-explore'), tabAbout=qs('#tab-about');
+    var modal = qs('#modal'), modalMedia=qs('#modalMedia'), modalTitle=qs('#modalTitle'), modalCaption=qs('#modalCaption'), modalLink=qs('#modalLink');
+
+    var state = { tab:'home', activeCat:null, cacheCat:{}, cacheExplore:[] };
+
+    function setTab(t){
+      state.tab=t;
+      tabHome.classList.toggle('active', t==='home');
+      tabExplore.classList.toggle('active', t==='explore');
+      tabAbout.classList.toggle('active', t==='about');
+      dbg('RENDER: tab='+t);
+      render();
+    }
+
+    function openModal(post){
+      modalMedia.innerHTML='';
+      if(post.cover){
+        var img=el('img',{src:post.cover,alt:''}); img.style.width='100%'; img.style.maxHeight='60vh'; img.style.objectFit='contain'; modalMedia.appendChild(img);
+      }else{
+        var ph=el('div'); ph.style.padding='60px 0'; ph.style.color='#94a3b8'; ph.style.textAlign='center'; ph.textContent='(بدون تصویر)'; modalMedia.appendChild(ph);
+      }
+      modalTitle.textContent = post.title || ('پست #'+post.id);
+      modalCaption.textContent = post.text || '—';
+      state.cacheExplore=flat; if(state.tab==='explore') render();
+          }).catch(function(e){ tip.textContent='خطا: '+e.message; dbg('ERR explore: '+e.message); });
+          return;
+        }
+        var grid2=el('div'); grid2.className='grid'; app.appendChild(grid2);
+        for(var m=0;m<state.cacheExplore.length;m++){
+          (function(p){
+            var card=el('article'); card.className='card';
+            if(p.cover){ var img=el('img',{className:'thumb',src:p.cover,alt:''}); card.appendChild(img); }
+            var body=el('div'); body.className='card-body';
+            var line=el('div',{className:'muted'}); line.textContent='#'+p.id;
+            var btn=el('a'); btn.href='javascript:void(0)'; btn.textContent='نمایش کپشن و لینک'; btn.style.color='#0369a1';
+            btn.onclick=function(){ openModal(p); };
+            body.appendChild(line); body.appendChild(btn);
+            card.appendChild(body); grid2.appendChild(card);
+          })(state.cacheExplore[m]);
+        }
+      } else {
+        var h3=el('h2'); h3.textContent='درباره'; app.appendChild(h3);
+        var p=el('p',{className:'muted'});
+        p.textContent='این نسخهٔ سبک، پست‌های کانال‌های ایتا را بدون بک‌اند جمع می‌کند. در «خانه»، هر دسته به یک کانال وصل است؛ در «اکسپلور»، همهٔ پست‌ها قاطی نمایش داده می‌شوند. روی هر پست بزنید تا کپشن کامل و لینک باز شود.';
+        app.appendChild(p);
+      }
+    }
+
+    qs('#tab-home').addEventListener('click', function(){ setTab('home'); });
+    qs('#tab-explore').addEventListener('click', function(){ setTab('explore'); });
+    qs('#tab-about').addEventListener('click', function(){ setTab('about'); });
+
+    setTab('home');
+  })();
+  </script>
+</body>
+</html>
+modalLink.href = post.link;
+      modal.classList.add('show'); modal.setAttribute('aria-hidden','false');
+      function onClose(e){ if(e.target===modal){ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modal.removeEventListener('click',onClose); } }
+      modal.addEventListener('click', onClose);
+    }
+
+    function render(){
+      app.innerHTML='';
+      if(state.tab==='home'){
+        if(!state.activeCat){
+          var h=el('h2'); h.textContent='دسته‌ها'; app.appendChild(h);
+          var g=el('div'); g.className='catgrid'; app.appendChild(g);
+          for(var i=0;i<CATEGORIES.length;i++){
+            (function(cat){
+              var b=el('button'); b.className='pill '+cat.pill; b.textContent=cat.title;
+              b.onclick=function(){ state.activeCat=cat.key; render(); };
+              g.appendChild(b);
+            })(CATEGORIES[i]);
+          }
+          var tip=el('p',{className:'muted'}); tip.textContent='روی هر دسته بزنید تا پست‌های مربوط نمایش داده شود.'; app.appendChild(tip);
+        }else{
+          var cat=null; for(var j=0;j<CATEGORIES.length;j++){ if(CATEGORIES[j].key===state.activeCat){ cat=CATEGORIES[j]; break; } }
+          var bar=el('div'); bar.style.display='flex'; bar.style.gap='10px'; bar.style.alignItems='center';
+          var back=el('button',{className:'btn'}); back.textContent='بازگشت'; back.onclick=function(){ state.activeCat=null; render(); };
+          var ttl=el('h2'); ttl.textContent=cat.title; bar.appendChild(back); bar.appendChild(ttl); app.appendChild(bar);
+
+          var posts=state.cacheCat[cat.key];
+          if(!posts){
+            var hint=el('p',{className:'muted'}); hint.textContent='در حال بارگذاری…'; app.appendChild(hint);
+            fetchChannelLatest(CHANNELS[cat.key], 16).then(function(res){
+              state.cacheCat[cat.key]=res||[];
+              if(state.tab==='home' && state.activeCat===cat.key) render();
+            }).catch(function(e){ hint.textContent='خطا: '+e.message; dbg('ERR fetch cat '+cat.key+': '+e.message); });
+            return;
+          }
+          if(!posts.length){ var empty=el('p',{className:'muted'}); empty.textContent='پستی یافت نشد.'; app.appendChild(empty); return; }
+
+          var grid=el('div'); grid.className='grid'; app.appendChild(grid);
+          for(var k=0;k<posts.length;k++){
+            (function(p){
+              var card=el('article'); card.className='card';
+              if(p.cover){ var img=el('img',{className:'thumb',src:p.cover,alt:''}); card.appendChild(img); }
+              var body=el('div'); body.className='card-body';
+              var id=el('div',{className:'muted'}); id.textContent='#'+p.id;
+              var btn=el('a'); btn.href='javascript:void(0)'; btn.textContent='نمایش کپشن و لینک'; btn.style.color='#0369a1';
+              btn.onclick=function(){ openModal(p); };
+              body.appendChild(id); body.appendChild(btn);
+              card.appendChild(body); grid.appendChild(card);
+            })(posts[k]);
+          }
+        }
+      } else if(state.tab==='explore'){
+        var h2=el('h2'); h2.textContent='اکسپلور – همهٔ دسته‌ها'; app.appendChild(h2);
+        if(!state.cacheExplore.length){
+          var tip=el('p',{className:'muted'}); tip.textContent='در حال گردآوری پست‌ها…'; app.appendChild(tip);
+          var tasks=[]; for(var i2=0;i2<CATEGORIES.length;i2++){ (function(cat){
+            tasks.push( fetchChannelLatest(CHANNELS[cat.key], 8).then(function(arr){
+              arr=arr||[]; for(var t=0;t<arr.length;t++){ arr[t].category=cat.key; } return arr;
+            }) );
+          })(CATEGORIES[i2]); }
+          Promise.all(tasks).then(function(all){
+            var flat=[]; for(var a=0;a<all.length;a++){ flat=flat.concat(all[a]); }
+            flat.sort(byDescId); flat=flat.slice(0,24);
