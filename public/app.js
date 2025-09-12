@@ -220,3 +220,4 @@ return fetchText(url).then(function(html){
         posts.forEach(function(p){
           var card=el('article'); card.className='card';
           if(p.cover){ var img=el('img',{className:'thumb',src:p.cover,alt:''}); card.appendChild(img); }
+          
