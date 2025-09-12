@@ -1,101 +1,4 @@
-
-<!doctype html>
-<html lang="fa" dir="rtl">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>شبکه سلامت – نسخه ایتا</title>
-  <style>
-    body{font-family:tahoma,arial,sans-serif;background:#f7fafc;color:#111;max-width:900px;margin:0 auto;padding:16px}
-    h1{font-size:22px;margin:0 0 8px}
-    .muted{color:#6b7280;font-size:12px}
-    .tabs{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e5e7eb;display:flex;gap:8px;justify-content:space-around;padding:10px}
-    .tabbtn{background:#f1f5f9;border:1px solid #e5e7eb;border-
-
-radius:999px;padding:8px 14px;cursor:pointer}
-    .tabbtn.active{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
-    main{padding-bottom:72px}
-    .pill{display:inline-block;border:1px solid #e5e7eb;background:#fff;border-radius:999px;padding:8px 12px;margin:6px 6px 0 0;cursor:pointer}
-    .pill.active{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
-    .card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin:10px 0}
-    .title{font-weight:700;margin:4px 0}
-    .cap{font-size:13px;color:#374151;line-height:1.9;white-space:pre-wrap}
-    .row{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
-
-    a.btn{font-size:12px;text-decoration:none;background:#0ea5e9;color:#fff;padding:6px 10px;border-radius:999px}
-    input.search{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px}
-  </style>
-</head>
-<body>
-  <h1>شبکه سلامت</h1>
-  <div class="muted">نسخه آزمایشی – ایتا</div>
-
-  <main id="app"></main>
-
-  <nav class="tabs">
-    <button class="tabbtn" data-tab="home">خانه</button>
-    <button class="tabbtn" data-tab="explore">اکسپلور</button>
-
-    <button class="tabbtn" data-tab="search">جستجو</button>
-    <button class="tabbtn" data-tab="about">درباره ما</button>
-  </nav>
-
-  <script type="text/javascript">
-  // ====== تنظیمات ======
-  var API  = "https://script.google.com/macros/s/AKfycbzfsN3oMUFRdpmDp4Ghada9l7sJokOaG2iWvYPaWPH3IB0QaRHhpeTaPCXG3gxSlJVQgw/exec";
-  // هر دسته را به اسلاگ کانال خودش وصل کن (فعلاً همه تستی روی همان کانال)
-  var CHANNELS = {
-    mental:   "bedasht_ravan",   // سلامت روان
-    nutrition:"bedasht_ravan",   // تغذیه
-    dental:   "bedasht_ravan",   // دهان و دندان
-    disease:  "bedasht_ravan",   // بیماری‌ها
-    family:   "bedasht_ravan"    // سلامت خانواده
-
-  };
-  var CATS = [
-    { key:"mental",    title:"سلامت روان" },
-    { key:"nutrition", title:"تغذیه" },
-    { key:"dental",    title:"دهان و دندان" },
-    { key:"disease",   title:"بیماری‌ها" },
-    { key:"family",    title:"سلامت خانواده" }
-  ];
-
-  // ====== کمک‌تابع‌ها ======
-  function xhrGet(url, cb){
-    try{ var x=new XMLHttpRequest(); x.open("GET",url,true);
-      x.onreadystatechange=function(){ if(x.readyState===4){ cb(null,x); } }; x.send(null);
-    }catch(e){ cb(e); }
-  }
-  function esc(s){ s=s||""; return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
-
-      .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
-  function cut(s,n){ if(!s) return ""; return s.length>n? s.slice(0,n)+"…" : s; }
-
-  function fetchChannel(slug, limit, cb){
-    var url = API + "?slug=" + encodeURIComponent(slug) + "&limit=" + encodeURIComponent(limit||20);
-    xhrGet(url, function(err, x){
-      if(err || x.status!==200){ cb(err||new Error("API "+x.status)); return; }
-      try{ cb(null, JSON.parse(x.responseText).items || []); }
-      catch(e){ cb(e); }
-    });
-  }
-
-  // ====== وضعیت برنامه ======
-  var state = {
-    tab: "home",
-
-    activeCat: null,
-    lists: {},     // posts per category
-    explore: [],   // mixed list
-    searchPool: [],// merged list for search
-    q: ""
-  };
-
-  var app = document.getElementById("app");
-
-  // ====== رندرها ======
-  function render(){
-    var html = "";
+var html = "";
     if(state.tab==="home"){
       if(!state.activeCat){
         html += '<h2>دسته‌ها</h2><div>';
@@ -103,7 +6,6 @@ radius:999px;padding:8px 14px;cursor:pointer}
           var c=CATS[i];
           html += '<span class="pill" data-gocat="'+c.key+'">'+c.title+'</span>';
         }
-
         html += '</div>';
         html += '<div class="muted" style="margin-top:8px">یک دسته را انتخاب کنید.</div>';
         app.innerHTML = html;
@@ -118,7 +20,6 @@ radius:999px;padding:8px 14px;cursor:pointer}
         app.innerHTML = html;
       }
     }
-
     else if(state.tab==="explore"){
       if(!state.explore.length) html += '<div class="muted">در حال بارگذاری…</div>';
       html += renderPosts(state.explore);
@@ -134,9 +35,7 @@ radius:999px;padding:8px 14px;cursor:pointer}
           var t = (p.title||"") + " " + (p.caption||"");
           if(t.toLowerCase().indexOf(ql) !== -1) results.push(p);
         }
-        html += '<div class="muted" 
-
-style="margin-top:6px">'+results.length+' نتیجه</div>';
+        html += '<div class="muted" style="margin-top:6px">'+results.length+' نتیجه</div>';
       }else{
         html += '<div class="muted" style="margin-top:6px">کلیدواژه را بنویسید…</div>';
       }
@@ -149,7 +48,6 @@ style="margin-top:6px">'+results.length+' نتیجه</div>';
       html += '<h2>درباره ما</h2>'
            +  '<p class="cap">این نسخه‌ی آزمایشی با داده‌های کانال‌های ایتا ساخته شده است. '
            +  'برای هر دسته می‌توانید اسلاگ کانال جداگانه قرار دهید و محتواها در «اکسپلور» باهم ترکیب می‌شوند.</p>';
-
       app.innerHTML = html;
     }
 
@@ -165,7 +63,6 @@ style="margin-top:6px">'+results.length+' نتیجه</div>';
       var k = e.target.getAttribute("data-gocat");
       if(k){ state.activeCat = k; if(!state.lists[k]) loadCategory(k); render(); return; }
       if(e.target.getAttribute("data-back")){ state.activeCat=null; render(); }
-
     };
   }
 
@@ -182,7 +79,6 @@ style="margin-top:6px">'+results.length+' نتیجه</div>';
            +      '<a class="btn" href="'+p.link+'" target="_blank" rel="noopener">مشاهده در ایتا</a>'
            +    '</div>'
            +  '</div>';
-
     }
     return html;
   }
@@ -202,7 +98,7 @@ style="margin-top:6px">'+results.length+' نتیجه</div>';
   }
 
   function loadExploreAndSearch(){
-    var keys = []; for(var i=0;i<CATS.length;i++) keys.push(CATS[i].key);
+      var keys = []; for(var i=0;i<CATS.length;i++) keys.push(CATS[i].key);
     var pending = keys.length, all = [];
     for(var i=0;i<keys.length;i++){
       (function(k){
@@ -217,7 +113,6 @@ style="margin-top:6px">'+results.length+' نتیجه</div>';
           }
         });
       })(keys[i]);
-
     }
   }
 
@@ -238,3 +133,93 @@ style="margin-top:6px">'+results.length+' نتیجه</div>';
   </script>
 </body>
 </html>
+    <!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>شبکه سلامت – نسخه ایتا</title>
+  <style>
+    body{font-family:tahoma,arial,sans-serif;background:#f7fafc;color:#111;max-width:900px;margin:0 auto;padding:16px}
+    h1{font-size:22px;margin:0 0 8px}
+    .muted{color:#6b7280;font-size:12px}
+    .tabs{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e5e7eb;display:flex;gap:8px;justify-content:space-around;padding:10px}
+    .tabbtn{background:#f1f5f9;border:1px solid #e5e7eb;border-radius:999px;padding:8px 14px;cursor:pointer}
+    .tabbtn.active{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
+    main{padding-bottom:72px}
+    .pill{display:inline-block;border:1px solid #e5e7eb;background:#fff;border-radius:999px;padding:8px 12px;margin:6px 6px 0 0;cursor:pointer}
+    .pill.active{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin:10px 0}
+    .title{font-weight:700;margin:4px 0}
+    .cap{font-size:13px;color:#374151;line-height:1.9;white-space:pre-wrap}
+    .row{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+    a.btn{font-size:12px;text-decoration:none;background:#0ea5e9;color:#fff;padding:6px 10px;border-radius:999px}
+    input.search{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px}
+  </style>
+</head>
+<body>
+  <h1>شبکه سلامت</h1>
+  <div class="muted">نسخه آزمایشی – ایتا</div>
+
+  <main id="app"></main>
+
+  <nav class="tabs">
+    <button class="tabbtn" data-tab="home">خانه</button>
+    <button class="tabbtn" data-tab="explore">اکسپلور</button>
+    <button class="tabbtn" data-tab="search">جستجو</button>
+    <button class="tabbtn" data-tab="about">درباره ما</button>
+  </nav>
+
+  <script type="text/javascript">
+  // ====== تنظیمات ======
+  var API  = "https://script.google.com/macros/s/AKfycbzfsN3oMUFRdpmDp4Ghada9l7sJokOaG2iWvYPaWPH3IB0QaRHhpeTaPCXG3gxSlJVQgw/exec";
+  // هر دسته را به اسلاگ کانال خودش وصل کن (فعلاً همه تستی روی همان کانال)
+  var CHANNELS = {
+    mental:   "bedasht_ravan",   // سلامت روان
+    nutrition:"bedasht_ravan",   // تغذیه
+    dental:   "bedasht_ravan",   // دهان و دندان
+    disease:  "bedasht_ravan",   // بیماری‌ها
+    family:   "bedasht_ravan"    // سلامت خانواده
+  };
+  var CATS = [
+    { key:"mental",    title:"سلامت روان" },
+    { key:"nutrition", title:"تغذیه" },
+    { key:"dental",    title:"دهان و دندان" },
+    { key:"disease",   title:"بیماری‌ها" },
+    { key:"family",    title:"سلامت خانواده" }
+  ];
+
+  // ====== کمک‌تابع‌ها ======
+  function xhrGet(url, cb){
+    try{ var x=new XMLHttpRequest(); x.open("GET",url,true);
+      x.onreadystatechange=function(){ if(x.readyState===4){ cb(null,x); } }; x.send(null);
+    }catch(e){ cb(e); }
+  }
+  function esc(s){ s=s||""; return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+  function cut(s,n){ if(!s) return ""; return s.length>n? s.slice(0,n)+"…" : s; }
+
+  function fetchChannel(slug, limit, cb){
+    var url = API + "?slug=" + encodeURIComponent(slug) + "&limit=" + encodeURIComponent(limit||20);
+    xhrGet(url, function(err, x){
+      if(err || x.status!==200){ cb(err||new Error("API "+x.status)); return; }
+      try{ cb(null, JSON.parse(x.responseText).items || []); }
+      catch(e){ cb(e); }
+    });
+  }
+
+  // ====== وضعیت برنامه ======
+  var state = {
+    tab: "home",
+    activeCat: null,
+    lists: {},     // posts per category
+    explore: [],   // mixed list
+    searchPool: [],// merged list for search
+    q: ""
+  };
+
+  var app = document.getElementById("app");
+
+  // ====== رندرها ======
+  function render(){
+
