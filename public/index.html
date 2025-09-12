@@ -1,33 +1,57 @@
+</div>;
+      return;
+    }
+    out.innerHTML = 
+      <div class="grid">
+        ${posts.map(p=>
+          <article class="card">
+            ${p.cover ? <img class="thumb" src="${p.cover}" alt=""> : ''}
+            <div class="muted">#${p.id}</div>
+            <p>${p.text}</p>
+            <a href="${p.link}" target="_blank" rel="noopener">مشاهده در ایتا</a>
+          </article>
+        ).join('')}
+      </div>;
+  }catch(e){
+    out.innerHTML = <div class="err"><strong>خطا:</strong> ${e.message}</div>`;
+  }
+}
+</script>
+</body>
+</html>
 <!doctype html>
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>سلامت - ایتا (ساده)</title>
+  <title>سلامت – کانال ایتا</title>
   <style>
     body{font-family:Tahoma,Arial,sans-serif;background:#f6f7fb;color:#0f172a;margin:0}
     header{padding:12px 16px;background:#fff;border-bottom:1px solid #e5e7eb;position:sticky;top:0}
-    .wrap{max-width:720px;margin:0 auto;padding:16px}
-    .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin:12px 0;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-    .thumb{width:100%;border-radius:8px}
+    .wrap{max-width:760px;margin:0 auto;padding:16px}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    input{padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;min-width:240px}
+    button{padding:8px 12px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;cursor:pointer}
     .muted{color:#64748b;font-size:13px}
-    button{padding:8px 12px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer}
-    .err{background:#fef2f2;border-color:#fecaca;color:#991b1b}
-    pre{white-space:pre-wrap;direction:ltr;background:#0b1021;color:#e2e8f0;padding:8px;border-radius:8px;overflow:auto}
-    .row{display:flex;gap:8px;flex-wrap:wrap}
-    input{padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;min-width:220px}
+    .grid{display:grid;grid-template-columns:1fr;gap:12px}
+    @media(min-width:640px){ .grid{grid-template-columns:1fr 1fr} }
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:12px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+    .thumb{width:100%;border-radius:8px}
+    .err{background:#fef2f2;border-color:#fecaca;color:#991b1b;padding:12px;border-radius:12px}
+    a{color:#0369a1;text-decoration:none}
   </style>
 </head>
 <body>
 <header class="wrap">
   <div class="row">
-    <strong style="font-size:18px">پست‌های ایتا</strong>
+    <strong style="font-size:18px">پست‌های کانال ایتا</strong>
     <input id="slug" value="bedasht_ravan" />
     <button onclick="load()">بارگذاری</button>
   </div>
-  <div class="muted">
-    اگر سفید دیدی، اول این URL را در یک تب جدا باز کن و ببین محتوا می‌آید:<br>
-    <code>https://r.jina.ai/https://eitaa.com/bedasht_ravan</code>
+  <div class="muted" style="margin-top:6px">
+    اگر سفیده/چیزی نیومد، این‌ها را جدا باز کن:
+    <br>۱) <code>https://r.jina.ai/https://eitaa.com/s/bedasht_ravan</code>
+    <br>۲) <code>https://r.jina.ai/https://eitaa.com/bedasht_ravan</code>
   </div>
 </header>
 
@@ -36,31 +60,56 @@
 </main>
 
 <script>
-async function fetchChannel(channel){
-  // 1) تلاش از صفحه پروفایل
-  let html = await (await fetch(https://r.jina.ai/https://eitaa.com/${encodeURIComponent(channel)})).text();
+async function fetchText(url){
+  const r = await fetch(url);
+  if(!r.ok) throw new Error(fetch ${url} -> ${r.status});
+  return await r.text();
+}
+function uniq(a){ return Array.from(new Set(a)); }
+function stripTags(s=''){ return s.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim(); }
 
-  // اگر چیزی پیدا نشد، 2) از صفحه‌ی تایم‌لاین /s/ بخوان
-  const hasPostsOnProfile = html.includes(/s/${channel}) || html.includes(/${channel}/);
-  if(!hasPostsOnProfile){
-    const res2 = await fetch(https://r.jina.ai/https://eitaa.com/s/${encodeURIComponent(channel)});
-    if(!res2.ok) throw new Error(proxy fetch failed: ${res2.status});
-    html = await res2.text();
-  }
-
-  // الگو: /<slug>/<id>
-  const re = new RegExp(/${channel}/(\\d+), 'g');
-  const ids = Array.from(new Set(Array.from(html.matchAll(re)).map(m=>m[1]))).slice(0, 20);
+function extractPosts(html, slug, limit=24){
+  // همهٔ لینک‌های /<slug>/<id>
+  const re = new RegExp(/${slug}/(\\d+), 'g');
+  const ids = uniq(Array.from(html.matchAll(re)).map(m=>m[1])).slice(0, limit);
 
   return ids.map(id=>{
-    const link = https://eitaa.com/${channel}/${id};
-    const idx = html.indexOf(/${channel}/${id});
-    const win = idx>=0 ? html.slice(Math.max(0,idx-1500), Math.min(html.length, idx+1500)) : '';
-    const text = (win.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()||'').slice(0,200);
-    // یک تصویر اگر نزدیک پست باشد
-    const imgMatch = win.match(/https?:\/\/[^"'<>\s]+?\.(?:jpg|jpeg|png|gif)/i) 
-                  || win.match(/https?:\/\/[^"'<>\s]+\/download\/[^"'<>\s]+/i); // لینک‌های download ایتا
-    return { id, link, text, cover: imgMatch ? imgMatch[0] : '' };
+    const mark = /${slug}/${id};
+    const idx  = html.indexOf(mark);
+    const win  = idx>=0 ? html.slice(Math.max(0,idx-1600), Math.min(html.length, idx+1600)) : '';
+    const text = (stripTags(win.split('</a>').slice(-1)[0]||'')).slice(0,180);
+
+    // تصویر احتمالی نزدیک پست (هم فرمت فایل، هم لینک‌های download)
+    const m1 = win.match(/https?:\/\/[^"'<>\s]+?\.(?:jpg|jpeg|png|gif)/i);
+    const m2 = win.match(/https?:\/\/[^"'<>\s]+\/download\/[^"'<>\s]+/i);
+    const cover = (m1?.[0] || m2?.[0] || '');
+
+    return { id, link:https://eitaa.com/${slug}/${id}, text, cover };
   });
 }
-</script>
+
+async function fetchChannel(slug){
+  // اول صفحهٔ تایم‌لاین /s/<slug>
+  try{
+    const htmlS = await fetchText(https://r.jina.ai/https://eitaa.com/s/${encodeURIComponent(slug)});
+    const itemsS = extractPosts(htmlS, slug);
+    if(itemsS.length) return itemsS;
+  }catch(e){ /* ادامه می‌دهیم */ }
+
+  // فالبک: صفحهٔ پروفایل /<slug>
+  const htmlP = await fetchText(https://r.jina.ai/https://eitaa.com/${encodeURIComponent(slug)});
+  return extractPosts(htmlP, slug);
+}
+
+async function load(){
+  const out  = document.getElementById('out');
+  const slug = document.getElementById('slug').value.trim();
+  out.innerHTML = '<p class="muted">در حال بارگذاری…</p>';
+  try{
+    const posts = await fetchChannel(slug);
+    if(!posts.length){
+      out.innerHTML = `
+        <div class="err">
+          هیچ پستی پیدا نشد. مطمئن شوید کانال عمومی است و URL پست‌ها به صورت
+          <code>https://eitaa.com/${slug}/123</code>
+          می‌آید.
