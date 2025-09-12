@@ -37,44 +37,30 @@
 
 <script>
 async function fetchChannel(channel){
-  const url = https://r.jina.ai/https://eitaa.com/${encodeURIComponent(channel)};
-  const res = await fetch(url);
-  if(!res.ok) throw new Error(proxy fetch failed: ${res.status});
-  const html = await res.text();
-  const re = new RegExp(/${channel}/(\\d+),'g');
-  const ids = Array.from(new Set(Array.from(html.matchAll(re)).map(m=>m[1]))).slice(0, 15);
+  // 1) تلاش از صفحه پروفایل
+  let html = await (await fetch(https://r.jina.ai/https://eitaa.com/${encodeURIComponent(channel)})).text();
+
+  // اگر چیزی پیدا نشد، 2) از صفحه‌ی تایم‌لاین /s/ بخوان
+  const hasPostsOnProfile = html.includes(/s/${channel}) || html.includes(/${channel}/);
+  if(!hasPostsOnProfile){
+    const res2 = await fetch(https://r.jina.ai/https://eitaa.com/s/${encodeURIComponent(channel)});
+    if(!res2.ok) throw new Error(proxy fetch failed: ${res2.status});
+    html = await res2.text();
+  }
+
+  // الگو: /<slug>/<id>
+  const re = new RegExp(/${channel}/(\\d+), 'g');
+  const ids = Array.from(new Set(Array.from(html.matchAll(re)).map(m=>m[1]))).slice(0, 20);
+
   return ids.map(id=>{
     const link = https://eitaa.com/${channel}/${id};
     const idx = html.indexOf(/${channel}/${id});
-    const win = idx>=0 ? html.slice(Math.max(0,idx-1200), Math.min(html.length, idx+1200)) : '';
+    const win = idx>=0 ? html.slice(Math.max(0,idx-1500), Math.min(html.length, idx+1500)) : '';
     const text = (win.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()||'').slice(0,200);
-    const imgMatch = win.match(/https?:\/\/[^"'<>\\s]+?\\.(?:jpg|jpeg|png|gif)/i);
-    return {id, link, text, cover: imgMatch?imgMatch[0]:''};
+    // یک تصویر اگر نزدیک پست باشد
+    const imgMatch = win.match(/https?:\/\/[^"'<>\s]+?\.(?:jpg|jpeg|png|gif)/i) 
+                  || win.match(/https?:\/\/[^"'<>\s]+\/download\/[^"'<>\s]+/i); // لینک‌های download ایتا
+    return { id, link, text, cover: imgMatch ? imgMatch[0] : '' };
   });
 }
-
-async function load(){
-  const out = document.getElementById('out');
-  const slug = document.getElementById('slug').value.trim();
-  out.innerHTML = '<p class="muted">در حال بارگذاری…</p>';
-  try{
-    const posts = await fetchChannel(slug);
-    if(!posts.length){
-      out.innerHTML = '<div class="card err">هیچ پستی پیدا نشد. اسلاگ کانال را چک کنید.</div>';
-      return;
-    }
-    out.innerHTML = posts.map(p => 
-      <div class="card">
-        ${p.cover ? <img class="thumb" src="${p.cover}" alt="" /> : ''}
-        <div class="muted">#${p.id}</div>
-        <p>${p.text}</p>
-        <a href="${p.link}" target="_blank">مشاهده در ایتا</a>
-      </div>
-    ).join('');
-  }catch(e){
-    out.innerHTML = '<div class="card err"><strong>خطا:</strong> '+e.message+'</div>';
-  }
-}
 </script>
-</body>
-</html>
