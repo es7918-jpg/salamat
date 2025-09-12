@@ -3,35 +3,75 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>سلامت – کانال ایتا</title>
+  <title>شبکه سلامت – نسخه ایتا</title>
+  <meta name="theme-color" content="#0ea5e9" />
   <style>
-    body{font-family:Tahoma,Arial,sans-serif;background:#f6f7fb;color:#0f172a;margin:0}
-    header{padding:12px 16px;background:#fff;border-bottom:1px solid #e5e7eb;position:sticky;top:0}
-    .wrap{max-width:760px;margin:0 auto;padding:16px}
-    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    input{padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;min-width:220px}
-    button{padding:8px 12px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;cursor:pointer}
-    .muted{color:#64748b;font-size:13px}
+    :root{--bg:#f6f7fb;--fg:#0f172a;--muted:#64748b;--card:#fff;--border:#e5e7eb;--brand:#0284c7}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--fg);font-family:Tahoma,Arial,sans-serif}
+    header{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--border);z-index:10}
+    .wrap{max-width:820px;margin:0 auto;padding:16px}
+    .title{font-weight:800;font-size:18px}
+    .muted{color:var(--muted);font-size:13px}
+    .grid{display:grid;grid-template-columns:1fr;gap:12px}
+    @media(min-width:640px){.grid{grid-template-columns:1fr 1fr}}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.04);overflow:hidden}
+    .card-body{padding:12px}
+    .thumb{width:100%;aspect-ratio:1/1;object-fit:cover;background:#eef2ff}
+    .btn{padding:8px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer}
+    .pill{display:inline-block;padding:8px 12px;border-radius:14px;color:#fff;font-weight:700}
+    .pill.sky{background:linear-gradient(45deg,#0ea5e9,#22d3ee)}
+    .pill.green{background:linear-gradient(45deg,#10b981,#84cc16)}
+    .pill.indigo{background:linear-gradient(45deg,#6366f1,#a78bfa)}
+    .pill.rose{background:linear-gradient(45deg,#f43f5e,#fb923c)}
+    .pill.pink{background:linear-gradient(45deg,#d946ef,#ec4899)}
+    nav.bottom{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border)}
+    .tabs{display:grid;grid-template-columns:repeat(3,1fr);max-width:820px;margin:0 auto}
+    .tabbtn{padding:12px;border:none;background:transparent;cursor:pointer}
+    .tabbtn.active{color:var(--brand);font-weight:700}
+    .catgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .catbtn{border:none;border-radius:16px;color:#fff;padding:18px 14px;text-align:right;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.08)}
+    /* modal */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:16px}
+    .modal.show{display:flex}
+    .modal-card{max-width:760px;width:100%;background:#fff;border-radius:14px;overflow:hidden}
+    .modal-media{width:100%;background:#000}
+    .modal-body{padding:14px}
+    a{color:#0369a1;text-decoration:none}
   </style>
 </head>
 <body>
-<header class="wrap">
-  <div class="row">
-    <strong style="font-size:18px">پست‌های کانال ایتا</strong>
-    <input id="slug" value="bedasht_ravan" />
-    <input id="maxid" value="40" title="تا چه شماره‌ای اسکن شود" />
-    <button id="btn">بارگذاری</button>
-  </div>
-  <div class="muted" style="margin-top:6px">
-    اگر چیزی نیامد، عدد «تا شماره» را بیشتر کن (مثلاً 80) و دوباره بارگذاری بزن.
-  </div>
-</header>
+  <header>
+    <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div class="title">شبکه سلامت</div>
+      <div class="muted">نسخهٔ آزمایشی – ایتا</div>
+    </div>
+  </header>
 
-<main id="out" class="wrap">
-  <p class="muted">برای شروع روی «بارگذاری» بزنید.</p>
-</main>
+  <main id="app" class="wrap" style="padding-bottom:84px">
+    <!-- محتوا را app.js می‌سازد -->
+    <p class="muted">در حال آماده‌سازی…</p>
+  </main>
 
-<!-- اسکریپت خارجی -->
-<script src="./app.js?v=7"></script>
+  <nav class="bottom">
+    <div class="tabs">
+      <button id="tab-home"    class="tabbtn active">خانه</button>
+      <button id="tab-explore" class="tabbtn">اکسپلور</button>
+      <button id="tab-about"   class="tabbtn">درباره</button>
+    </div>
+  </nav>
+
+  <!-- Modal for post -->
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="modal-card">
+      <div id="modalMedia" class="modal-media"></div>
+      <div class="modal-body">
+        <div id="modalTitle" style="font-weight:800;margin-bottom:6px">—</div>
+        <div id="modalCaption" class="muted" style="line-height:1.9">—</div>
+        <div style="margin-top:10px"><a id="modalLink" target="_blank" rel="noopener">مشاهده در ایتا</a></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js?v=app-eitaa-tabs-1"></script>
 </body>
 </html>
