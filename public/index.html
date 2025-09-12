@@ -139,145 +139,69 @@
     }
 
     function fetchChannelLatest(slug, count){
-      return Promise.allSettled([
-        fetchText('https://r.jina.ai/https://eitaa.com/s/'+encodeURIComponent(slug)),
-        fetchText('https://r.jina.ai/https://eitaa.com/'+encodeURIComponent(slug))
-      ]).then(function(all){
-        var html1 = all[0].status==='fulfilled' ? all[0].value : '';
-        var html2 = all[1].status==='fulfilled' ? all[1].value : '';
-        var ids = uniq( extractIdsFromHtml(html1, slug).concat( extractIdsFromHtml(html2, slug) ) ).sort(byDesc).slice(0, count||16);
-        if(!ids.length) return [];
-        return mapLimit(ids, 6, function(ID){
-          var url='https://r.jina.ai/https://eitaa.com/'+encodeURIComponent(slug)+'/'+ID;
-          return fetchText(url).then(function(html){
-            if(!html || html.length<200) return null;
-            var meta=parsePostHtml(html);
-            return { id:ID, slug:slug, title:'پست #'+ID, text:meta.text, cover:meta.cover, link:'https://eitaa.com/'+slug+'/'+ID };
+  count = count || 16;
+
+  // مرحله 1: تلاش با استخراج ID از صفحات /s و /
+  return Promise.allSettled([
+    fetchText('https://r.jina.ai/https://eitaa.com/s/'+encodeURIComponent(slug)),
+    fetchText('https://r.jina.ai/https://eitaa.com/'+encodeURIComponent(slug))
+  ]).then(function(all){
+    var html1 = all[0].status==='fulfilled' ? all[0].value : '';
+    var html2 = all[1].status==='fulfilled' ? all[1].value : '';
+    var ids = uniq( extractIdsFromHtml(html1, slug).concat( extractIdsFromHtml(html2, slug) ) )
+               .sort(byDesc)
+               .slice(0, count);
+
+    if(ids.length) {
+      return mapLimit(ids, 6, function(ID){
+        var url='https://r.jina.ai/https://eitaa.com/'+encodeURIComponent(slug)+'/'+ID;
+        return fetchText(url).then(function(html){
+          if(!html || html.length<200) return null;
+          var meta=parsePostHtml(html);
+          return { id:ID, slug:slug, title:'پست #'+ID, text:meta.text, cover:meta.cover, link:'https://eitaa.com/'+slug+'/'+ID };
+        });
+      }).then(function(arr){ return (arr||[]).filter(Boolean).sort(byDescId); });
+    }
+
+    // مرحله 2: فال‌بکِ سریع – پیدا کردن آخرین ID با پروب نمایی
+    function probe(id){
+      var url='https://r.jina.ai/https://eitaa.com/'+encodeURIComponent(slug)+'/'+id;
+      return fetchText(url).then(function(html){ return (html && html.length>300); })
+                           .catch(function(){ return false; });
+    }
+
+    // 2-الف: بالا رفتن نمایی تا جایی که «نیست»
+    var hi = 1;
+    function grow(){
+      return probe(hi).then(function(exists){
+        if(exists){ hi = hi*2; return grow(); }
+        // hi جایی‌ست که دیگر نیست؛ پس بین hi/2 و hi یک باینری سرچ می‌کنیم
+        var lo = Math.floor(hi/2);
+        function bin(){
+          if(lo+1 >= hi) return lo; // lo آخرین پست موجود
+          var mid = Math.floor((lo+hi)/2);
+          return probe(mid).then(function(ex){
+            if(ex) { lo = mid; } else { hi = mid; }
+            return bin();
           });
-        }).then(function(posts){ return posts.filter(Boolean).sort(byDescId); });
+        }
+        return bin();
       });
     }
-    // ---- UI ----
-    var app = qs('#app');
-    var tabHome=qs('#tab-home'), tabExplore=qs('#tab-explore'), tabAbout=qs('#tab-about');
-    var modal = qs('#modal'), modalMedia=qs('#modalMedia'), modalTitle=qs('#modalTitle'), modalCaption=qs('#modalCaption'), modalLink=qs('#modalLink');
 
-    var state = { tab:'home', activeCat:null, cacheCat:{}, cacheExplore:[] };
-
-    function setTab(t){
-      state.tab=t;
-      tabHome.classList.toggle('active', t==='home');
-      tabExplore.classList.toggle('active', t==='explore');
-      tabAbout.classList.toggle('active', t==='about');
-      render();
-    }
-
-    function openModal(post){
-      modalMedia.innerHTML='';
-      if(post.cover){
-        var img=el('img',{src:post.cover,alt:''}); img.style.width='100%'; img.style.maxHeight='60vh'; img.style.objectFit='contain'; modalMedia.appendChild(img);
-      }else{
-        var ph=el('div'); ph.style.padding='60px 0'; ph.style.color='#94a3b8'; ph.style.textAlign='center'; ph.textContent='(بدون تصویر)'; modalMedia.appendChild(ph);
-      }
-      modalTitle.textContent = post.title || ('پست #'+post.id);
-      modalCaption.textContent = post.text || '—';
-      modalLink.href = post.link;
-      modal.classList.add('show'); modal.setAttribute('aria-hidden','false');
-      function onClose(e){ if(e.target===modal){ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); modal.removeEventListener('click',onClose); } }
-      modal.addEventListener('click', onClose);
-    }
-
-    function render(){
-      app.innerHTML='';
-      if(state.tab==='home'){
-        if(!state.activeCat){
-          var h=el('h2'); h.textContent='دسته‌ها'; app.appendChild(h);
-          var g=el('div'); g.className='catgrid'; app.appendChild(g);
-          for(var i=0;i<CATEGORIES.length;i++){
-            (function(cat){
-              var b=el('button'); b.className='pill '+cat.pill; b.textContent=cat.title;
-              b.onclick=function(){ state.activeCat=cat.key; render(); };
-              g.appendChild(b);
-            })(CATEGORIES[i]);
-          }
-          var tip=el('p',{className:'muted'}); tip.textContent='روی هر دسته بزنید تا پست‌های مربوط نمایش داده شود.'; app.appendChild(tip);
-        }else{
-          var cat=null; for(var j=0;j<CATEGORIES.length;j++){ if(CATEGORIES[j].key===state.activeCat){ cat=CATEGORIES[j]; break; } }
-          var bar=el('div'); bar.style.display='flex'; bar.style.gap='10px'; bar.style.alignItems='center';
-          var back=el('button',{className:'btn'}); back.textContent='بازگشت'; back.onclick=function(){ state.activeCat=null; render(); };
-          var ttl=el('h2'); ttl.textContent=cat.title; bar.appendChild(back); bar.appendChild(ttl); app.appendChild(bar);
-
-          var posts=state.cacheCat[cat.key];
-          if(!posts){
-            var hint=el('p',{className:'muted'}); hint.textContent='در حال بارگذاری…'; app.appendChild(hint);
-            fetchChannelLatest(CHANNELS[cat.key], 16).then(function(res){
-              state.cacheCat[cat.key]=res||[];
-              if(state.tab==='home' && state.activeCat===cat.key) render();
-            }).catch(function(){ hint.textContent='خطا در دریافت پست‌ها.'; });
-            return;
-          }
-          if(!posts.length){ var empty=el('p',{className:'muted'}); empty.textContent='پستی یافت نشد.'; app.appendChild(empty); return; }
-
-          var grid=el('div'); grid.className='grid'; app.appendChild(grid);
-          for(var k=0;k<posts.length;k++){
-            (function(p){
-              var card=el('article'); card.className='card';
-              if(p.cover){ var img=el('img',{className:'thumb',src:p.cover,alt:''}); card.appendChild(img); }
-              var body=el('div'); body.className='card-body';
-              var id=el('div',{className:'muted'}); id.textContent='#'+p.id;
-              var btn=el('a'); btn.href='javascript:void(0)'; btn.textContent='نمایش کپشن و لینک'; btn.style.color='#0369a1';
-              btn.onclick=function(){ openModal(p); };
-              body.appendChild(id); body.appendChild(btn);
-              card.appendChild(body); grid.appendChild(card);
-            })(posts[k]);
-          }
-        }
-      } else if(state.tab==='explore'){
-        var h2=el('h2'); h2.textContent='اکسپلور – همهٔ دسته‌ها'; app.appendChild(h2);
-        if(!state.cacheExplore.length){
-          var tip=el('p',{className:'muted'}); tip.textContent='در حال گردآوری پست‌ها…'; app.appendChild(tip);
-          var tasks=[]; for(var i2=0;i2<CATEGORIES.length;i2++){ (function(cat){
-            tasks.push( fetchChannelLatest(CHANNELS[cat.key], 8).then(function(arr){
-              arr=arr||[]; for(var t=0;t<arr.length;t++){ arr[t].category=cat.key; } return arr;
-            }) );
-          })(CATEGORIES[i2]); }
-          Promise.all(tasks).then(function(all){
-            var flat=[]; for(var a=0;a<all.length;a++){ flat=flat.concat(all[a]); }
-            flat.sort(byDescId); flat=flat.slice(0,24);
-            state.cacheExplore=flat; if(state.tab==='explore') render();
-          }).catch(function(){ tip.textContent='خطا در دریافت.'; });
-          return;
-        }
-        var grid2=el('div'); grid2.className='grid'; app.appendChild(grid2);
-        for(var m=0;m<state.cacheExplore.length;m++){
-          (function(p){
-            var card=el('article'); card.className='card';
-            if(p.cover){ var img=el('img',{className:'thumb',src:p.cover,alt:''}); card.appendChild(img); }
-            var body=el('div'); body.className='card-body';
-            var cat=null; for(var ci=0;ci<CATEGORIES.length;ci++){ if(CATEGORIES[ci].key===p.category){ cat=CATEGORIES[ci]; break; } }
-            var line=el('div',{className:'muted'}); line.textContent=(cat?cat.title+' · ':'')+'#'+p.id;
-            var btn=el('a'); btn.href='javascript:void(0)'; btn.textContent='نمایش کپشن و لینک'; btn.style.color='#0369a1';
-            btn.onclick=function(){ openModal(p); };
-            body.appendChild(line); body.appendChild(btn);
-            card.appendChild(body); grid2.appendChild(card);
-          })(state.cacheExplore[m]);
-        }
-      } else {
-        var h3=el('h2'); h3.textContent='درباره'; app.appendChild(h3);
-        var p=el('p',{className:'muted'});
-        p.textContent='این نسخهٔ سبک، پست‌های کانال‌های ایتا را بدون بک‌اند جمع می‌کند. در «خانه»، هر دسته به یک کانال وصل است؛ در «اکسپلور»، همهٔ پست‌ها قاطی نمایش داده می‌شوند. روی هر پست بزنید تا کپشن کامل و لینک باز شود.';
-        app.appendChild(p);
-      }
-    }
-
-    // تب‌ها
-    qs('#tab-home').addEventListener('click', function(){ setTab('home'); });
-    qs('#tab-explore').addEventListener('click', function(){ setTab('explore'); });
-    qs('#tab-about').addEventListener('click', function(){ setTab('about'); });
-
-    // شروع
-    setTab('home');
-  })();
-  </script>
-</body>
-</html>
+    return grow().then(function(lastId){
+      if(!lastId || lastId<1) return [];
+      // فقط نزدیک آخرین‌ها را می‌گیریم
+      var want = [];
+      for(var i=lastId; i>0 && want.length<count; i--) want.push(i);
+      return mapLimit(want, 6, function(ID){
+        var url='https://r.jina.ai/https://eitaa.com/'+encodeURIComponent(slug)+'/'+ID;
+        return fetchText(url).then(function(html){
+          if(!html || html.length<200) return null;
+          var meta=parsePostHtml(html);
+          return { id:ID, slug:slug, title:'پست #'+ID, text:meta.text, cover:meta.cover, link:'https://eitaa.com/'+slug+'/'+ID };
+        }).catch(function(){ return null; });
+      }).then(function(arr){ return (arr||[]).filter(Boolean).sort(byDescId); });
+    });
+  });
+}
