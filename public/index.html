@@ -1,122 +1,49 @@
-if(err){ status.innerHTML = "خطا: " + err.message; return; }
-      if(xhr.status !== 200){ status.innerHTML = "خطا در API: " + xhr.status; return; }
-      try{
-        var data = JSON.parse(xhr.responseText);
-        render(data.items || []);
-      }catch(e){
-        status.innerHTML = "خطا در پردازش پاسخ";
-        if(window.console) console.error(e, xhr.responseText);
-      }
-    });
-  }
-
-  // شروع بعد از لود DOM
-  if(document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", load);
-  }else{
-    load();
-  }
-  </script>
-</body>
-</html>
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="UTF-8">
   <title>آخرین پست‌های ایتا</title>
   <style>
-    body{font-family:tahoma,arial,sans-serif;background:#f7fafc;color:#111;max-width:900px;margin:0 auto;padding:20px}
-    h1{font-size:22px;margin:0 0 16px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-    .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-    .thumb{width:100%;height:0;padding-top:56.25%;background:#eee;position:relative}
-    .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-    .body{padding:10px}
-    .title{font-weight:700;font-size:14px;margin-bottom:6px;line-height:1.6}
-    .cap{font-size:12px;color:#374151;line-height:1.8}
-    .footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
-    a.btn{font-size:12px;text-decoration:none;background:#0ea5e9;color:#fff;padding:6px 10px;border-radius:999px}
-    .muted{color:#6b7280;font-size:12px}
-    .empty{color:#6b7280}
+    body { font-family: sans-serif; padding: 20px; }
+    .card { border: 1px solid #ccc; padding: 10px; margin: 10px 0; border-radius: 6px; }
+    .card img { max-width: 100%; display: block; margin-top: 10px; }
+    .muted { color: gray; font-size: 14px; }
   </style>
 </head>
 <body>
   <h1>آخرین پست‌های ایتا</h1>
-  <div id="status" class="muted">در حال بارگذاری…</div>
-  <div id="feed" class="grid"></div>
+  <div id="status" class="muted">در حال بارگذاری...</div>
+  <div id="feed"></div>
 
-  <script type="text/javascript">
-  // ====== تنظیمات ======
-  var API = "https://script.google.com/macros/s/AKfycbzfsN3oMUFRdpmDp4Ghada9l7sJokOaG2iWvYPaWPH3IB0QaRHhpeTaPCXG3gxSlJVQgw/exec";
-  var CHANNEL_SLUG = "bedasht_ravan";   // اسلاگ کانال
-  var LIMIT = 12;                       // تعداد پست‌ها
+  <script>
+    async function load() {
+      const status = document.getElementById("status");
+      const feed = document.getElementById("feed");
+      try {
+        const res = await fetch("https://script.google.com/macros/s/AKfycbzfsN3oMUFRdpmDp4Ghada9l7sJokOaG2iWvYPaWPH3IB0QaRHhpeTaPCXG3gxSlJVQgw/exec");
+        if (!res.ok) throw new Error("خطا در API: " + res.status);
+        const data = await res.json();
 
-  // ====== توابع سازگار با مرورگر قدیمی ======
-  function httpGet(url, callback){
-    try{
-      var xhr = new XMLHttpRequest();
-      xhr.open("GET", url, true);
-      xhr.onreadystatechange = function(){
-        if(xhr.readyState === 4){
-          callback(null, xhr);
-        }
-      };
-      xhr.send(null);
-    }catch(e){
-      callback(e);
+        status.textContent = "";
+        feed.innerHTML = "";
+
+        data.items.forEach(post => {
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = 
+            <h3>${post.title}</h3>
+            <p>${post.caption || ""}</p>
+            ${post.images.map(img => <img src="${img}" alt="پست">).join("")}
+            <a href="${post.link}" target="_blank">مشاهده در ایتا</a>
+          ;
+          feed.appendChild(card);
+        });
+      } catch (err) {
+        status.textContent = "خطا: " + err.message;
+      }
     }
-  }
 
-  function escapeHtml(s){
-    if(!s) return "";
-    return String(s).replace(/[&<>\"']/g, function(m){
-      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m];
-    });
-  }
-
-  function pickCover(images){
-    if(!images || !images.length) return "";
-    for(var i=0;i<images.length;i++){
-      if(!/logo|icon|favicon/i.test(images[i])) return images[i];
-    }
-    return images[0];
-  }
-
-  function render(items){
-    var feed = document.getElementById("feed");
-    var status = document.getElementById("status");
-    if(!items || !items.length){
-      status.innerHTML = "";
-      feed.innerHTML = '<div class="empty">فعلاً پستی پیدا نشد.</div>';
-      return;
-    }
-    status.innerHTML = "";
-    var html = "";
-    for(var i=0;i<items.length;i++){
-      var p = items[i];
-      var cover = pickCover(p.images || []);
-      html += '<div class="card">';
-      html +=   '<div class="thumb">';
-      if(cover){ html += '<img src="'+cover+'" alt="">'; }
-      html +=   '</div>';
-      html +=   '<div class="body">';
-      html +=     '<div class="title">'+escapeHtml(p.title || ("پست #"+p.id))+'</div>';
-      var cap = escapeHtml(p.caption || "");
-      if(cap.length > 180) cap = cap.slice(0,180) + "…";
-      html +=     '<div class="cap">'+cap+'</div>';
-      html +=     '<div class="footer">';
-      html +=       '<span class="muted">#'+p.id+'</span>';
-      html +=       '<a class="btn" href="'+p.link+'" target="_blank" rel="noopener">مشاهده در ایتا</a>';
-      html +=     '</div>';
-      html +=   '</div>';
-      html += '</div>';
-    }
-    feed.innerHTML = html;
-  }
-
-  function load(){
-    var status = document.getElementById("status");
-    status.innerHTML = "در حال بارگذاری…";
-    var url = API + "?slug=" + encodeURIComponent(CHANNEL_SLUG) + "&limit=" + encodeURIComponent(LIMIT);
-    httpGet(url, function(err, xhr){
+    load();
+  </script>
+</body>
+</html>
