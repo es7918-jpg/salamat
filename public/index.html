@@ -1,111 +1,39 @@
-<!doctype html>
-<html lang="fa" dir="rtl">
+<!DOCTYPE html>
+<html lang="fa">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>شبکه سلامت – نسخه آزمایشی</title>
+  <meta charset="UTF-8">
+  <title>فید سلامت - ایتا</title>
   <style>
-    body { font-family: sans-serif; margin:0; padding:0; }
-    header { padding: 1rem; border-bottom: 1px solid #ccc; }
-    nav { position: fixed; bottom:0; left:0; right:0; display:flex; border-top:1px solid #ccc; background:#fff; }
-    nav button { flex:1; padding:1rem; border:none; background:none; font-size:1rem; }
-    .post { border:1px solid #ddd; margin:1rem; padding:1rem; border-radius:8px; background:#fafafa; }
-    .hidden { display:none; }
+    body { font-family: sans-serif; direction: rtl; }
+    .post { border:1px solid #ddd; margin:10px; padding:10px; border-radius:8px; }
+    img { max-width:100%; height:auto; display:block; margin:5px 0; }
+    .caption { color:#333; font-size:14px; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>شبکه سلامت</h1>
-    <small>نسخه آزمایشی – ایتا</small>
-  </header>
-
-  <main id="app">
-    <p>در حال آماده‌سازی…</p>
-  </main>
-
-  <nav>
-    <button onclick="setTab('home')">خانه</button>
-    <button onclick="setTab('explore')">اکسپلور</button>
-    <button onclick="setTab('about')">درباره</button>
-  </nav>
+  <h1>آخرین پست‌ها از ایتا</h1>
+  <div id="feed">در حال بارگذاری...</div>
 
   <script>
-  const CATEGORIES = [
-    { key:'mental', title:'سلامت روان', channel:'bedasht_ravan' },
-    { key:'nutrition', title:'تغذیه', channel:'bedasht_ravan' },
-    { key:'dental', title:'دهان و دندان', channel:'bedasht_ravan' },
-    { key:'diseases', title:'بیماری‌ها', channel:'bedasht_ravan' },
-    { key:'family', title:'سلامت خانواده', channel:'bedasht_ravan' },
-  ];
+    const API = "https://script.google.com/macros/s/AKfycbXXXXXXXX/exec"; // لینک Web App خودت
+    const slug = "bedasht_ravan";  // اینو تغییر بده برای دسته‌های دیگه
+    const url = ${API}?slug=${slug}&limit=5;
 
-  let state = { tab:'home', posts:{} };
-
-  function setTab(tab){
-    state.tab = tab;
-    render();
-  }
-
-  async function fetchPosts(channel){
-    const out=[];
-    for(let i=200;i>180;i--){
-      try {
-        const url = `https://r.jina.ai/https://eitaa.com/${channel}/${i}`;
-        const res = await fetch(url);
-        if(res.ok){
-          const txt = await res.text();
-          out.push({id:i, text:txt, link:`https://eitaa.com/${channel}/${i}`});
-        }
-      } catch(e){}
-    }
-    return out;
-  }
-
-  async function ensurePosts(cat){
-    if(state.posts[cat.key]) return;
-    const posts = await fetchPosts(cat.channel);
-    state.posts[cat.key] = posts;
-  }
-
-  async function render(){
-    const app=document.getElementById('app');
-    app.innerHTML="در حال بارگذاری…";
-
-    if(state.tab==='home'){
-      let html='<h2>دسته‌ها</h2><div>';
-      CATEGORIES.forEach(c=>{
-        html+=`<button onclick="openCat('${c.key}')">${c.title}</button> `;
+    fetch(url).then(r => r.json()).then(data => {
+      const feed = document.getElementById("feed");
+      feed.innerHTML = "";
+      data.items.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "post";
+        div.innerHTML = 
+          <h3>${p.title}</h3>
+          ${p.images.map(src => <img src="${src}">).join("")}
+          <p class="caption">${p.caption}</p>
+          <a href="${p.link}" target="_blank">مشاهده در ایتا</a>
+        ;
+        feed.appendChild(div);
       });
-      html+='</div>';
-      app.innerHTML=html;
-    }
-    else if(state.tab==='explore'){
-      let html='<h2>اکسپلور</h2>';
-      for(const c of CATEGORIES){
-        await ensurePosts(c);
-        state.posts[c.key].forEach(p=>{
-          html+=`<div class="post"><b>${c.title}</b><br><a href="${p.link}" target="_blank">مشاهده پست</a><pre>${p.text.slice(0,200)}...</pre></div>`;
-        });
-      }
-      app.innerHTML=html;
-    }
-    else if(state.tab==='about'){
-      app.innerHTML="<h2>درباره ما</h2><p>نسخه ساده آزمایشی برای نمایش پست‌های کانال ایتا.</p>";
-    }
-  }
-
-  async function openCat(key){
-    const app=document.getElementById('app');
-    const cat=CATEGORIES.find(c=>c.key===key);
-    await ensurePosts(cat);
-    let html=`<h2>${cat.title}</h2>`;
-    state.posts[key].forEach(p=>{
-      html+=`<div class="post"><a href="${p.link}" target="_blank">مشاهده پست</a><pre>${p.text.slice(0,200)}...</pre></div>`;
     });
-    html+=`<button onclick="render()">← بازگشت</button>`;
-    app.innerHTML=html;
-  }
-
-  render();
   </script>
 </body>
 </html>
