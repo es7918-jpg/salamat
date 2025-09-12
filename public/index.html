@@ -8,9 +8,10 @@
     body{font-family:tahoma,arial,sans-serif;background:#f7fafc;color:#111;max-width:900px;margin:0 auto;padding:20px}
     h1{font-size:22px;margin:0 0 16px}
     .card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin:10px 0}
-    .card img{max-width:100%;height:auto;display:block;margin-top:8px;border-radius:8px}
     .title{font-weight:700;margin:4px 0}
-    .cap{font-size:13px;color:#374151;line-height:1.8}
+    .cap{font-size:13px;color:#374151;line-height:1.9;white-space:pre-wrap}
+    .row{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+    a.btn{font-size:12px;text-decoration:none;background:#0ea5e9;color:#fff;padding:6px 10px;border-radius:999px}
     .muted{color:#6b7280;font-size:12px}
   </style>
 </head>
@@ -20,9 +21,9 @@
   <div id="feed"></div>
 
   <script type="text/javascript">
-  // === CONFIG (only ASCII here) ===
-  var API = "https://script.google.com/macros/s/AKfycbzfsN3oMUFRdpmDp4Ghada9l7sJokOaG2iWvYPaWPH3IB0QaRHhpeTaPCXG3gxSlJVQgw/exec";
-  var SLUG = "bedasht_ravan";
+  // ===== تنظیمات =====
+  var API  = "https://script.google.com/macros/s/AKfycbzfsN3oMUFRdpmDp4Ghada9l7sJokOaG2iWvYPaWPH3IB0QaRHhpeTaPCXG3gxSlJVQgw/exec";
+  var SLUG = "bedasht_ravan";  // اسلاگ کانال
   var LIMIT = 12;
 
   function xhrGet(url, cb){
@@ -38,26 +39,27 @@
     return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
                     .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   }
-  function pickCover(images){
-    if(!images || !images.length) return "";
-    for(var i=0;i<images.length;i++){ if(!/logo|icon|favicon/i.test(images[i])) return images[i]; }
-    return images[0];
-  }
   function render(items){
     var feed = document.getElementById("feed");
     var status = document.getElementById("status");
-    if(!items || !items.length){ status.innerHTML=""; feed.innerHTML='<div class="muted">هیچ پستی پیدا نشد.</div>'; return; }
+    if(!items || !items.length){
+      status.innerHTML = "";
+      feed.innerHTML = '<div class="muted">هیچ پستی پیدا نشد.</div>';
+      return;
+    }
     status.innerHTML = "";
     var html = "";
     for(var i=0;i<items.length;i++){
       var p = items[i];
-      var cover = pickCover(p.images||[]);
-      var cap = esc(p.caption||""); if(cap.length>180) cap = cap.slice(0,180) + "…";
+      var cap = esc(p.caption||"");
+      if(cap.length>300) cap = cap.slice(0,300) + "…";
       html += '<div class="card">'
             +   '<div class="title">' + esc(p.title || ("پست #"+p.id)) + '</div>'
-            +   (cover ? '<img src="'+cover+'" alt="">' : '')
             +   '<div class="cap">' + cap + '</div>'
-            +   '<div class="muted"><a href="'+p.link+'" target="_blank" rel="noopener">مشاهده در ایتا</a></div>'
+            +   '<div class="row">'
+            +     '<span class="muted">#'+p.id+'</span>'
+            +     '<a class="btn" href="'+p.link+'" target="_blank" rel="noopener">مشاهده در ایتا</a>'
+            +   '</div>'
             + '</div>';
     }
     feed.innerHTML = html;
@@ -73,7 +75,7 @@
         var data = JSON.parse(x.responseText);
         render(data.items || []);
       }catch(e){
-        status.innerHTML = "Parse error";
+        status.innerHTML = "اشکال در پردازش پاسخ";
       }
     });
   }
