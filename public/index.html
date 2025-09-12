@@ -1,24 +1,3 @@
-</div>;
-      return;
-    }
-    out.innerHTML = 
-      <div class="grid">
-        ${posts.map(p=>
-          <article class="card">
-            ${p.cover ? <img class="thumb" src="${p.cover}" alt=""> : ''}
-            <div class="muted">#${p.id}</div>
-            <p>${p.text}</p>
-            <a href="${p.link}" target="_blank" rel="noopener">مشاهده در ایتا</a>
-          </article>
-        ).join('')}
-      </div>;
-  }catch(e){
-    out.innerHTML = <div class="err"><strong>خطا:</strong> ${e.message}</div>`;
-  }
-}
-</script>
-</body>
-</html>
 <!doctype html>
 <html lang="fa" dir="rtl">
 <head>
@@ -37,7 +16,7 @@
     @media(min-width:640px){ .grid{grid-template-columns:1fr 1fr} }
     .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:12px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
     .thumb{width:100%;border-radius:8px}
-    .err{background:#fef2f2;border-color:#fecaca;color:#991b1b;padding:12px;border-radius:12px}
+    .err{background:#fef2f2;border-color:#fecaca;color:#991b1b;padding:12px;border-radius:12px;border:1px solid #fecaca}
     a{color:#0369a1;text-decoration:none}
   </style>
 </head>
@@ -46,12 +25,12 @@
   <div class="row">
     <strong style="font-size:18px">پست‌های کانال ایتا</strong>
     <input id="slug" value="bedasht_ravan" />
-    <button onclick="load()">بارگذاری</button>
+    <button id="btn">بارگذاری</button>
   </div>
   <div class="muted" style="margin-top:6px">
-    اگر سفیده/چیزی نیومد، این‌ها را جدا باز کن:
-    <br>۱) <code>https://r.jina.ai/https://eitaa.com/s/bedasht_ravan</code>
-    <br>۲) <code>https://r.jina.ai/https://eitaa.com/bedasht_ravan</code>
+    اگر سفیده بود، این‌ها را جدا باز کن:
+    1) https://r.jina.ai/https://eitaa.com/s/bedasht_ravan
+    2) https://r.jina.ai/https://eitaa.com/bedasht_ravan
   </div>
 </header>
 
@@ -60,56 +39,131 @@
 </main>
 
 <script>
-async function fetchText(url){
-  const r = await fetch(url);
-  if(!r.ok) throw new Error(fetch ${url} -> ${r.status});
-  return await r.text();
-}
-function uniq(a){ return Array.from(new Set(a)); }
-function stripTags(s=''){ return s.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim(); }
+(function(){
+  var out  = document.getElementById('out');
+  var btn  = document.getElementById('btn');
+  var slugEl = document.getElementById('slug');
 
-function extractPosts(html, slug, limit=24){
-  // همهٔ لینک‌های /<slug>/<id>
-  const re = new RegExp(/${slug}/(\\d+), 'g');
-  const ids = uniq(Array.from(html.matchAll(re)).map(m=>m[1])).slice(0, limit);
+  function fetchText(url, cbOk, cbErr){
+    var x = new XMLHttpRequest();
+    x.open('GET', url, true);
+    x.onreadystatechange = function(){
+      if(x.readyState === 4){
+        if(x.status >= 200 && x.status < 300) cbOk(x.responseText);
+        else cbErr(new Error('fetch '+url+' -> '+x.status));
+      }
+    };
+    x.send();
+  }
 
-  return ids.map(id=>{
-    const mark = /${slug}/${id};
-    const idx  = html.indexOf(mark);
-    const win  = idx>=0 ? html.slice(Math.max(0,idx-1600), Math.min(html.length, idx+1600)) : '';
-    const text = (stripTags(win.split('</a>').slice(-1)[0]||'')).slice(0,180);
+  function stripTags(s){
+    return String(s).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+  }
 
-    // تصویر احتمالی نزدیک پست (هم فرمت فایل، هم لینک‌های download)
-    const m1 = win.match(/https?:\/\/[^"'<>\s]+?\.(?:jpg|jpeg|png|gif)/i);
-    const m2 = win.match(/https?:\/\/[^"'<>\s]+\/download\/[^"'<>\s]+/i);
-    const cover = (m1?.[0] || m2?.[0] || '');
+  function uniq(arr){
+    var m = {}; var out = [];
+    for (var i=0;i<arr.length;i++){ var k = arr[i]; if(!m[k]){ m[k]=1; out.push(k); } }
+    return out;
+  }
 
-    return { id, link:https://eitaa.com/${slug}/${id}, text, cover };
-  });
-}
+  function extractPosts(html, slug, limit){
+    var re = new RegExp('/'+slug.replace(/[-/\\^$*+?.()|[\]{}]/g,'\\$&')+'/(\\d+)', 'g');
+    var ids = []; var m;
+    while((m = re.exec(html)) !== null){ ids.push(m[1]); }
+    ids = uniq(ids).slice(0, limit || 24);
 
-async function fetchChannel(slug){
-  // اول صفحهٔ تایم‌لاین /s/<slug>
-  try{
-    const htmlS = await fetchText(https://r.jina.ai/https://eitaa.com/s/${encodeURIComponent(slug)});
-    const itemsS = extractPosts(htmlS, slug);
-    if(itemsS.length) return itemsS;
-  }catch(e){ /* ادامه می‌دهیم */ }
+    var items = [];
+    for (var i=0;i<ids.length;i++){
+      var id = ids[i];
+      var mark = '/'+slug+'/'+id;
+      var idx = html.indexOf(mark);
+      var win = idx>=0 ? html.slice(Math.max(0, idx-1600), Math.min(html.length, idx+1600)) : '';
+      var parts = win.split('</a>');
+      var text  = stripTags(parts.length ? parts[parts.length-1] : '').slice(0,180);
 
-  // فالبک: صفحهٔ پروفایل /<slug>
-  const htmlP = await fetchText(https://r.jina.ai/https://eitaa.com/${encodeURIComponent(slug)});
-  return extractPosts(htmlP, slug);
-}
+      var cover = '';
+      var m1 = win.match(/https?:\/\/[^"'<>\s]+?\.(jpg|jpeg|png|gif)/i);
+      if(m1 && m1[0]) cover = m1[0];
+      if(!cover){
+        var m2 = win.match(/https?:\/\/[^"'<>\s]+\/download\/[^"'<>\s]+/i);
+        if(m2 && m2[0]) cover = m2[0];
+      }
 
-async function load(){
-  const out  = document.getElementById('out');
-  const slug = document.getElementById('slug').value.trim();
-  out.innerHTML = '<p class="muted">در حال بارگذاری…</p>';
-  try{
-    const posts = await fetchChannel(slug);
-    if(!posts.length){
-      out.innerHTML = `
-        <div class="err">
-          هیچ پستی پیدا نشد. مطمئن شوید کانال عمومی است و URL پست‌ها به صورت
-          <code>https://eitaa.com/${slug}/123</code>
-          می‌آید.
+      items.push({ id:id, link:'https://eitaa.com/'+slug+'/'+id, text:text, cover:cover });
+    }
+    return items;
+  }
+
+  function renderError(msg){
+    out.innerHTML = '';
+    var d = document.createElement('div');
+    d.className = 'err';
+    d.appendChild(document.createTextNode('خطا: '+msg));
+    out.appendChild(d);
+  }
+
+  function renderPosts(items){
+    out.innerHTML = '';
+    var grid = document.createElement('div');
+    grid.className = 'grid';
+    out.appendChild(grid);
+
+    for (var i=0;i<items.length;i++){
+      var p = items[i];
+      var card = document.createElement('article');
+      card.className = 'card';
+          if(p.cover){
+        var img = document.createElement('img');
+        img.className = 'thumb';
+        img.src = p.cover;
+        img.alt = '';
+        card.appendChild(img);
+      }
+
+      var idline = document.createElement('div');
+      idline.className = 'muted';
+      idline.appendChild(document.createTextNode('#'+p.id));
+      card.appendChild(idline);
+
+      var para = document.createElement('p');
+      para.appendChild(document.createTextNode(p.text));
+      card.appendChild(para);
+
+      var a = document.createElement('a');
+      a.href = p.link;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.appendChild(document.createTextNode('مشاهده در ایتا'));
+      card.appendChild(a);
+
+      grid.appendChild(card);
+    }
+  }
+
+  function load(){
+    var slug = slugEl.value.replace(/\s+/g,'').trim();
+    if(!slug){ renderError('اسلاگ خالی است'); return; }
+    out.innerHTML = '<p class="muted">در حال بارگذاری…</p>';
+
+    // اول /s/<slug>
+    var urlS = 'https://r.jina.ai/https://eitaa.com/s/'+encodeURIComponent(slug);
+    fetchText(urlS, function(htmlS){
+      var items = extractPosts(htmlS, slug, 24);
+      if(items.length){ renderPosts(items); return; }
+      // فالبک: /<slug>
+      var urlP = 'https://r.jina.ai/https://eitaa.com/'+encodeURIComponent(slug);
+      fetchText(urlP, function(htmlP){
+        var items2 = extractPosts(htmlP, slug, 24);
+        if(items2.length){ renderPosts(items2); }
+        else renderError('هیچ پستی پیدا نشد. کانال باید عمومی باشد و URL پست‌ها به صورت https://eitaa.com/'+slug+'/123 بیاید.');
+      }, function(err2){ renderError(err2.message); });
+    }, function(err1){
+      renderError(err1.message);
+    });
+  }
+
+  btn.addEventListener('click', load);
+})();
+</script>
+</body>
+</html>
