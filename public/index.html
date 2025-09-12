@@ -1,85 +1,240 @@
+
 <!doctype html>
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>آخرین پست‌های ایتا</title>
+  <title>شبکه سلامت – نسخه ایتا</title>
   <style>
-    body{font-family:tahoma,arial,sans-serif;background:#f7fafc;color:#111;max-width:900px;margin:0 auto;padding:20px}
-    h1{font-size:22px;margin:0 0 16px}
+    body{font-family:tahoma,arial,sans-serif;background:#f7fafc;color:#111;max-width:900px;margin:0 auto;padding:16px}
+    h1{font-size:22px;margin:0 0 8px}
+    .muted{color:#6b7280;font-size:12px}
+    .tabs{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e5e7eb;display:flex;gap:8px;justify-content:space-around;padding:10px}
+    .tabbtn{background:#f1f5f9;border:1px solid #e5e7eb;border-
+
+radius:999px;padding:8px 14px;cursor:pointer}
+    .tabbtn.active{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
+    main{padding-bottom:72px}
+    .pill{display:inline-block;border:1px solid #e5e7eb;background:#fff;border-radius:999px;padding:8px 12px;margin:6px 6px 0 0;cursor:pointer}
+    .pill.active{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
     .card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin:10px 0}
     .title{font-weight:700;margin:4px 0}
     .cap{font-size:13px;color:#374151;line-height:1.9;white-space:pre-wrap}
     .row{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+
     a.btn{font-size:12px;text-decoration:none;background:#0ea5e9;color:#fff;padding:6px 10px;border-radius:999px}
-    .muted{color:#6b7280;font-size:12px}
+    input.search{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px}
   </style>
 </head>
 <body>
-  <h1>آخرین پست‌های ایتا</h1>
-  <div id="status" class="muted">در حال بارگذاری...</div>
-  <div id="feed"></div>
+  <h1>شبکه سلامت</h1>
+  <div class="muted">نسخه آزمایشی – ایتا</div>
+
+  <main id="app"></main>
+
+  <nav class="tabs">
+    <button class="tabbtn" data-tab="home">خانه</button>
+    <button class="tabbtn" data-tab="explore">اکسپلور</button>
+
+    <button class="tabbtn" data-tab="search">جستجو</button>
+    <button class="tabbtn" data-tab="about">درباره ما</button>
+  </nav>
 
   <script type="text/javascript">
-  // ===== تنظیمات =====
+  // ====== تنظیمات ======
   var API  = "https://script.google.com/macros/s/AKfycbzfsN3oMUFRdpmDp4Ghada9l7sJokOaG2iWvYPaWPH3IB0QaRHhpeTaPCXG3gxSlJVQgw/exec";
-  var SLUG = "bedasht_ravan";  // اسلاگ کانال
-  var LIMIT = 12;
+  // هر دسته را به اسلاگ کانال خودش وصل کن (فعلاً همه تستی روی همان کانال)
+  var CHANNELS = {
+    mental:   "bedasht_ravan",   // سلامت روان
+    nutrition:"bedasht_ravan",   // تغذیه
+    dental:   "bedasht_ravan",   // دهان و دندان
+    disease:  "bedasht_ravan",   // بیماری‌ها
+    family:   "bedasht_ravan"    // سلامت خانواده
 
+  };
+  var CATS = [
+    { key:"mental",    title:"سلامت روان" },
+    { key:"nutrition", title:"تغذیه" },
+    { key:"dental",    title:"دهان و دندان" },
+    { key:"disease",   title:"بیماری‌ها" },
+    { key:"family",    title:"سلامت خانواده" }
+  ];
+
+  // ====== کمک‌تابع‌ها ======
   function xhrGet(url, cb){
-    try{
-      var x = new XMLHttpRequest();
-      x.open("GET", url, true);
-      x.onreadystatechange = function(){ if(x.readyState===4){ cb(null, x); } };
-      x.send(null);
+    try{ var x=new XMLHttpRequest(); x.open("GET",url,true);
+      x.onreadystatechange=function(){ if(x.readyState===4){ cb(null,x); } }; x.send(null);
     }catch(e){ cb(e); }
   }
-  function esc(s){
-    s = s || "";
-    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
-                    .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
-  }
-  function render(items){
-    var feed = document.getElementById("feed");
-    var status = document.getElementById("status");
-    if(!items || !items.length){
-      status.innerHTML = "";
-      feed.innerHTML = '<div class="muted">هیچ پستی پیدا نشد.</div>';
-      return;
-    }
-    status.innerHTML = "";
-    var html = "";
-    for(var i=0;i<items.length;i++){
-      var p = items[i];
-      var cap = esc(p.caption||"");
-      if(cap.length>300) cap = cap.slice(0,300) + "…";
-      html += '<div class="card">'
-            +   '<div class="title">' + esc(p.title || ("پست #"+p.id)) + '</div>'
-            +   '<div class="cap">' + cap + '</div>'
-            +   '<div class="row">'
-            +     '<span class="muted">#'+p.id+'</span>'
-            +     '<a class="btn" href="'+p.link+'" target="_blank" rel="noopener">مشاهده در ایتا</a>'
-            +   '</div>'
-            + '</div>';
-    }
-    feed.innerHTML = html;
-  }
-  function load(){
-    var status = document.getElementById("status");
-    status.innerHTML = "در حال بارگذاری...";
-    var url = API + "?slug=" + encodeURIComponent(SLUG) + "&limit=" + encodeURIComponent(LIMIT);
+  function esc(s){ s=s||""; return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
+
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+  function cut(s,n){ if(!s) return ""; return s.length>n? s.slice(0,n)+"…" : s; }
+
+  function fetchChannel(slug, limit, cb){
+    var url = API + "?slug=" + encodeURIComponent(slug) + "&limit=" + encodeURIComponent(limit||20);
     xhrGet(url, function(err, x){
-      if(err){ status.innerHTML = "خطا"; return; }
-      if(x.status !== 200){ status.innerHTML = "API " + x.status; return; }
-      try{
-        var data = JSON.parse(x.responseText);
-        render(data.items || []);
-      }catch(e){
-        status.innerHTML = "اشکال در پردازش پاسخ";
-      }
+      if(err || x.status!==200){ cb(err||new Error("API "+x.status)); return; }
+      try{ cb(null, JSON.parse(x.responseText).items || []); }
+      catch(e){ cb(e); }
     });
   }
-  if(document.readyState === "loading"){ document.addEventListener("DOMContentLoaded", load); } else { load(); }
+
+  // ====== وضعیت برنامه ======
+  var state = {
+    tab: "home",
+
+    activeCat: null,
+    lists: {},     // posts per category
+    explore: [],   // mixed list
+    searchPool: [],// merged list for search
+    q: ""
+  };
+
+  var app = document.getElementById("app");
+
+  // ====== رندرها ======
+  function render(){
+    var html = "";
+    if(state.tab==="home"){
+      if(!state.activeCat){
+        html += '<h2>دسته‌ها</h2><div>';
+        for(var i=0;i<CATS.length;i++){
+          var c=CATS[i];
+          html += '<span class="pill" data-gocat="'+c.key+'">'+c.title+'</span>';
+        }
+
+        html += '</div>';
+        html += '<div class="muted" style="margin-top:8px">یک دسته را انتخاب کنید.</div>';
+        app.innerHTML = html;
+      }else{
+        var key = state.activeCat;
+        var posts = state.lists[key] || [];
+        html += '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">'
+             +  '<button class="tabbtn" data-back="1">← بازگشت</button>'
+             +  '<h2 style="margin:0">'+ (getCatTitle(key)) +'</h2></div>';
+        if(!posts.length) html += '<div class="muted">در حال بارگذاری…</div>';
+        html += renderPosts(posts);
+        app.innerHTML = html;
+      }
+    }
+
+    else if(state.tab==="explore"){
+      if(!state.explore.length) html += '<div class="muted">در حال بارگذاری…</div>';
+      html += renderPosts(state.explore);
+      app.innerHTML = html;
+    }
+    else if(state.tab==="search"){
+      html += '<input class="search" placeholder="جستجو در عنوان و کپشن…" value="'+esc(state.q)+'" id="qinp">';
+      var results = [];
+      if(state.q){
+        var ql = state.q.toLowerCase();
+        for(var i=0;i<state.searchPool.length;i++){
+          var p = state.searchPool[i];
+          var t = (p.title||"") + " " + (p.caption||"");
+          if(t.toLowerCase().indexOf(ql) !== -1) results.push(p);
+        }
+        html += '<div class="muted" 
+
+style="margin-top:6px">'+results.length+' نتیجه</div>';
+      }else{
+        html += '<div class="muted" style="margin-top:6px">کلیدواژه را بنویسید…</div>';
+      }
+      html += renderPosts(results);
+      app.innerHTML = html;
+      var qinp = document.getElementById("qinp");
+      if(qinp){ qinp.oninput = function(){ state.q = qinp.value; render(); }; }
+    }
+    else if(state.tab==="about"){
+      html += '<h2>درباره ما</h2>'
+           +  '<p class="cap">این نسخه‌ی آزمایشی با داده‌های کانال‌های ایتا ساخته شده است. '
+           +  'برای هر دسته می‌توانید اسلاگ کانال جداگانه قرار دهید و محتواها در «اکسپلور» باهم ترکیب می‌شوند.</p>';
+
+      app.innerHTML = html;
+    }
+
+    // فعال/غیرفعال کردن دکمه‌های تب
+    var btns = document.querySelectorAll(".tabbtn");
+    for(var j=0;j<btns.length;j++){
+      var t = btns[j].getAttribute("data-tab");
+      if(t){ btns[j].className = "tabbtn" + (t===state.tab? " active": ""); }
+    }
+
+    // هندل کلیک‌های داینامیک
+    app.onclick = function(e){
+      var k = e.target.getAttribute("data-gocat");
+      if(k){ state.activeCat = k; if(!state.lists[k]) loadCategory(k); render(); return; }
+      if(e.target.getAttribute("data-back")){ state.activeCat=null; render(); }
+
+    };
+  }
+
+  function renderPosts(list){
+    var html = "";
+    for(var i=0;i<list.length;i++){
+      var p=list[i];
+      var cap = esc(p.caption||""); cap = cut(cap, 300);
+      html += '<div class="card">'
+           +    '<div class="title">'+ esc(p.title || ("پست #"+p.id)) +'</div>'
+           +    '<div class="cap">'+ cap +'</div>'
+           +    '<div class="row">'
+           +      '<span class="muted">#'+p.id+'</span>'
+           +      '<a class="btn" href="'+p.link+'" target="_blank" rel="noopener">مشاهده در ایتا</a>'
+           +    '</div>'
+           +  '</div>';
+
+    }
+    return html;
+  }
+
+  function getCatTitle(key){
+    for(var i=0;i<CATS.length;i++) if(CATS[i].key===key) return CATS[i].title;
+    return key;
+  }
+
+  // ====== لود دیتا ======
+  function loadCategory(key){
+    var slug = CHANNELS[key];
+    if(!slug) return;
+    fetchChannel(slug, 30, function(err, items){
+      if(!err){ state.lists[key] = items; render(); }
+    });
+  }
+
+  function loadExploreAndSearch(){
+    var keys = []; for(var i=0;i<CATS.length;i++) keys.push(CATS[i].key);
+    var pending = keys.length, all = [];
+    for(var i=0;i<keys.length;i++){
+      (function(k){
+        var slug = CHANNELS[k];
+        fetchChannel(slug, 20, function(err, items){
+          if(!err && items){ for(var j=0;j<items.length;j++){ items[j].cat=k; all.push(items[j]); } }
+          pending--; if(pending===0){
+            // ترتیب قاطی (ساده)
+            state.explore = all;
+            state.searchPool = all;
+            if(state.tab==="explore" || state.tab==="search") render();
+          }
+        });
+      })(keys[i]);
+
+    }
+  }
+
+  // ====== تب‌ها ======
+  var tabBtns = document.querySelectorAll(".tabs .tabbtn");
+  for(var i=0;i<tabBtns.length;i++){
+    tabBtns[i].onclick = function(){
+      var t = this.getAttribute("data-tab");
+      state.tab = t; if(t==="home" && !state.activeCat){} 
+      if(t==="explore" && state.explore.length===0) loadExploreAndSearch();
+      if(t==="search"  && state.searchPool.length===0) loadExploreAndSearch();
+      render();
+    };
+  }
+
+  // شروع
+  render(); // صفحه‌ی اولیه
   </script>
 </body>
 </html>
