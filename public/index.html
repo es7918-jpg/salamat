@@ -1,13 +1,17 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>آخرین پست‌های ایتا</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    .card { border: 1px solid #ccc; padding: 10px; margin: 10px 0; border-radius: 6px; }
-    .card img { max-width: 100%; display: block; margin-top: 10px; }
-    .muted { color: gray; font-size: 14px; }
+    body{font-family:tahoma,arial,sans-serif;background:#f7fafc;color:#111;max-width:900px;margin:0 auto;padding:20px}
+    h1{font-size:22px;margin:0 0 16px}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin:10px 0}
+    .card img{max-width:100%;height:auto;display:block;margin-top:8px;border-radius:8px}
+    .title{font-weight:700;margin:4px 0}
+    .cap{font-size:13px;color:#374151;line-height:1.8}
+    .muted{color:#6b7280;font-size:12px}
   </style>
 </head>
 <body>
@@ -15,35 +19,65 @@
   <div id="status" class="muted">در حال بارگذاری...</div>
   <div id="feed"></div>
 
-  <script>
-    async function load() {
-      const status = document.getElementById("status");
-      const feed = document.getElementById("feed");
-      try {
-        const res = await fetch("https://script.google.com/macros/s/AKfycbzfsN3oMUFRdpmDp4Ghada9l7sJokOaG2iWvYPaWPH3IB0QaRHhpeTaPCXG3gxSlJVQgw/exec");
-        if (!res.ok) throw new Error("خطا در API: " + res.status);
-        const data = await res.json();
+  <script type="text/javascript">
+  // === CONFIG (only ASCII here) ===
+  var API = "https://script.google.com/macros/s/AKfycbzfsN3oMUFRdpmDp4Ghada9l7sJokOaG2iWvYPaWPH3IB0QaRHhpeTaPCXG3gxSlJVQgw/exec";
+  var SLUG = "bedasht_ravan";
+  var LIMIT = 12;
 
-        status.textContent = "";
-        feed.innerHTML = "";
-
-        data.items.forEach(post => {
-          const card = document.createElement("div");
-          card.className = "card";
-          card.innerHTML = 
-            <h3>${post.title}</h3>
-            <p>${post.caption || ""}</p>
-            ${post.images.map(img => <img src="${img}" alt="پست">).join("")}
-            <a href="${post.link}" target="_blank">مشاهده در ایتا</a>
-          ;
-          feed.appendChild(card);
-        });
-      } catch (err) {
-        status.textContent = "خطا: " + err.message;
-      }
+  function xhrGet(url, cb){
+    try{
+      var x = new XMLHttpRequest();
+      x.open("GET", url, true);
+      x.onreadystatechange = function(){ if(x.readyState===4){ cb(null, x); } };
+      x.send(null);
+    }catch(e){ cb(e); }
+  }
+  function esc(s){
+    s = s || "";
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
+                    .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+  function pickCover(images){
+    if(!images || !images.length) return "";
+    for(var i=0;i<images.length;i++){ if(!/logo|icon|favicon/i.test(images[i])) return images[i]; }
+    return images[0];
+  }
+  function render(items){
+    var feed = document.getElementById("feed");
+    var status = document.getElementById("status");
+    if(!items || !items.length){ status.innerHTML=""; feed.innerHTML='<div class="muted">هیچ پستی پیدا نشد.</div>'; return; }
+    status.innerHTML = "";
+    var html = "";
+    for(var i=0;i<items.length;i++){
+      var p = items[i];
+      var cover = pickCover(p.images||[]);
+      var cap = esc(p.caption||""); if(cap.length>180) cap = cap.slice(0,180) + "…";
+      html += '<div class="card">'
+            +   '<div class="title">' + esc(p.title || ("پست #"+p.id)) + '</div>'
+            +   (cover ? '<img src="'+cover+'" alt="">' : '')
+            +   '<div class="cap">' + cap + '</div>'
+            +   '<div class="muted"><a href="'+p.link+'" target="_blank" rel="noopener">مشاهده در ایتا</a></div>'
+            + '</div>';
     }
-
-    load();
+    feed.innerHTML = html;
+  }
+  function load(){
+    var status = document.getElementById("status");
+    status.innerHTML = "در حال بارگذاری...";
+    var url = API + "?slug=" + encodeURIComponent(SLUG) + "&limit=" + encodeURIComponent(LIMIT);
+    xhrGet(url, function(err, x){
+      if(err){ status.innerHTML = "خطا"; return; }
+      if(x.status !== 200){ status.innerHTML = "API " + x.status; return; }
+      try{
+        var data = JSON.parse(x.responseText);
+        render(data.items || []);
+      }catch(e){
+        status.innerHTML = "Parse error";
+      }
+    });
+  }
+  if(document.readyState === "loading"){ document.addEventListener("DOMContentLoaded", load); } else { load(); }
   </script>
 </body>
 </html>
