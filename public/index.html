@@ -1,238 +1,82 @@
 <!doctype html>
 <html lang="fa" dir="rtl">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>شبکه سلامت (Eitaa)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <meta name="theme-color" content="#0ea5e9" />
-    <link rel="manifest" href="./manifest.json" />
-    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
-    <style>
-      html, body, #root { height: 100%; }
-      body { font-family: Vazirmatn, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
-      .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
-    </style>
-  </head>
-  <body class="bg-slate-50 text-slate-900">
-    <div id="root"></div>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script>
-      const SOURCE = 'eitaa';
-      const CHANNELS = {
-        mental: 'bedasht_ravan',
-        nutrition: 'bedasht_ravan',
-        dental: 'bedasht_ravan',
-        diseases: 'bedasht_ravan',
-        family: 'bedasht_ravan',
-      };
-      const CATEGORIES = [
-        { key:'mental', title:'سلامت روان', color:'from-sky-500 to-cyan-500' },
-        { key:'nutrition', title:'تغذیه', color:'from-emerald-500 to-lime-500' },
-        { key:'dental', title:'دهان و دندان', color:'from-indigo-500 to-violet-500' },
-        { key:'diseases', title:'بیماری‌ها', color:'from-rose-500 to-orange-500' },
-        { key:'family', title:'سلامت خانواده', color:'from-fuchsia-500 to-pink-500' },
-      ];
-      const cx=(...c)=>c.filter(Boolean).join(' ');
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>شبکه سلامت (Eitaa)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: Vazirmatn, sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <div id="root"></div>
 
-      async function fetchEitaa(channel){
-        const res = await fetch(`/api/eitaa?channel=${encodeURIComponent(channel)}`);
-        if(!res.ok) throw new Error('eitaa fetch failed');
-        const data = await res.json();
-        return (data.items||[]).map(it=>({id:it.id,type:(it.media[0]?.type||'post'),title:it.title,caption:it.text||'',embed:it.media.find(m=>m.type==='iframe'||m.type==='video')?.url||'',cover:it.media.find(m=>m.type==='image')?.url||'',link:it.link}));
-      }
-      async function fetchChannel(channel){ return fetchEitaa(channel); }
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script>
+    const CHANNELS = {
+      mental: 'bedasht_ravan',
+      nutrition: 'bedasht_ravan',
+      dental: 'bedasht_ravan',
+      diseases: 'bedasht_ravan',
+      family: 'bedasht_ravan',
+    };
+    const CATEGORIES = [
+      { key:'mental', title:'سلامت روان', color:'from-sky-500 to-cyan-500' },
+      { key:'nutrition', title:'تغذیه', color:'from-emerald-500 to-lime-500' },
+      { key:'dental', title:'دهان و دندان', color:'from-indigo-500 to-violet-500' },
+      { key:'diseases', title:'بیماری‌ها', color:'from-rose-500 to-orange-500' },
+      { key:'family', title:'سلامت خانواده', color:'from-fuchsia-500 to-pink-500' },
+    ];
 
-      function App(){
-        const [tab,setTab]=React.useState('home');
-        const [activeCat,setActiveCat]=React.useState(null);
-        const [explorePosts,setExplorePosts]=React.useState([]);
-        const [catPosts,setCatPosts]=React.useState({});
-        const [loading,setLoading]=React.useState(false);
-        const [q,setQ]=React.useState('');
-        const [searchPosts,setSearchPosts]=React.useState([]);
-        const [searchLoading,setSearchLoading]=React.useState(false);
+    async function fetchChannel(channel){
+      const url = https://r.jina.ai/https://eitaa.com/${encodeURIComponent(channel)};
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('proxy fetch failed');
+      const html = await res.text();
 
-        React.useEffect(()=>{ if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.warn));}},[]);
+      // استخراج آیدی پست‌ها
+      const re = new RegExp(/${channel}/(\\d+),'g');
+      const ids = Array.from(new Set(Array.from(html.matchAll(re)).map(m=>m[1]))).slice(0, 10);
 
-        React.useEffect(()=>{
-          if(tab!=='explore' || explorePosts.length) return;
-          (async()=>{
-            setLoading(true);
-            try{
-              const keys=CATEGORIES.map(c=>c.key);
-              const all=await Promise.all(keys.map(async k=>{
-                const ch=CHANNELS[k]; if(!ch) return [];
-                const items=await fetchChannel(ch);
-                return items.map(p=>({...p,category:k}));
-              }));
-              setExplorePosts(all.flat());
-            } finally { setLoading(false); }
-          })();
-        },[tab]);
+      return ids.map(id=>{
+        const link = https://eitaa.com/${channel}/${id};
+        const idx = html.indexOf(/${channel}/${id});
+        const win = idx>=0 ? html.slice(Math.max(0,idx-1000), Math.min(html.length, idx+1000)) : '';
+        const text = (win.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()||'').slice(0,200);
+        const imgMatch = win.match(/https?:\/\/[^"'<>\\s]+?\.(?:jpg|jpeg|png|gif)/i);
+        return {id, title:پست #${id}, caption:text, cover: imgMatch?imgMatch[0]:'', link};
+      });
+    }
 
-        React.useEffect(()=>{
-          if(tab!=='search' || searchPosts.length) return;
-          (async()=>{
-            setSearchLoading(true);
-            try{
-              const keys=CATEGORIES.map(c=>c.key);
-              const all=await Promise.all(keys.map(async k=>{
-                const ch=CHANNELS[k]; if(!ch) return [];
-                const items=await fetchChannel(ch);
-                return items.map(p=>({...p,category:k}));
-              }));
-              setSearchPosts(all.flat());
-            } finally{ setSearchLoading(false); }
-          })();
-        },[tab]);
+    function App(){
+      const [posts,setPosts]=React.useState([]);
+      const [loading,setLoading]=React.useState(false);
 
-        const filtered = q
-          ? searchPosts.filter(p => (p.title + ' ' + (p.caption || '')).toLowerCase().includes(q.toLowerCase()))
-          : [];
+      React.useEffect(()=>{
+        (async()=>{
+          setLoading(true);
+          const items=await fetchChannel(CHANNELS.mental);
+          setPosts(items);
+          setLoading(false);
+        })();
+      },[]);
 
-        return React.createElement('div',{className:'flex flex-col h-full max-w-md mx-auto bg-white shadow-sm'},
-          React.createElement('header',{className:'px-4 py-3 border-b border-slate-100 sticky top-0 bg-white z-10'},
-            React.createElement('div',{className:'flex items-center justify-between'},
-              React.createElement('h1',{className:'text-xl font-extrabold'},'شبکه سلامت'),
-              React.createElement('div',{className:'text-xs text-slate-500'}, 'EITAA')
-            )
-          ),
-          React.createElement('main',{className:'flex-1 overflow-y-auto pb-20'},
-            tab==='home'&&React.createElement(Home,{activeCat,setActiveCat,catPosts,setCatPosts}),
-            tab==='explore'&&React.createElement(Explore,{posts:explorePosts,loading}),
-            tab==='search'&&React.createElement(Search,{q,setQ,filtered,searchLoading}),
-            tab==='about'&&React.createElement(About,null),
-          ),
-          React.createElement('nav',{className:'safe-bottom fixed bottom-0 inset-x-0 border-t border-slate-200 bg-white'},
-            React.createElement('div',{className:'grid grid-cols-4 max-w-md mx-auto'},
-              React.createElement(BtnTab,{label:'خانه',active:tab==='home',onClick:()=>{setTab('home');setActiveCat(null);}}),
-              React.createElement(BtnTab,{label:'اکسپلور',active:tab==='explore',onClick:()=>setTab('explore')}),
-              React.createElement(BtnTab,{label:'جستجو',active:tab==='search',onClick:()=>setTab('search')}),
-              React.createElement(BtnTab,{label:'درباره ما',active:tab==='about',onClick:()=>setTab('about')}),
-            )
-          )
-        );
-      }
+      return React.createElement('div',{className:'max-w-md mx-auto p-4 space-y-4'},
+        React.createElement('h1',{className:'text-xl font-bold'},'پست‌های کانال سلامت'),
+        loading?React.createElement('p',null,'در حال بارگذاری…'):
+        posts.map(p=>React.createElement('div',{key:p.id,className:'border rounded-lg p-3 space-y-2 bg-white shadow'},
+          p.cover?React.createElement('img',{src:p.cover,className:'w-full rounded'}):null,
+          React.createElement('h2',{className:'font-semibold'},p.title),
+          React.createElement('p',{className:'text-sm text-slate-600'},p.caption),
+          React.createElement('a',{href:p.link,target:'_blank',className:'text-sky-600 text-sm'},'مشاهده در ایتا')
+        ))
+      );
+    }
 
-      function BtnTab({label,active,onClick}){return React.createElement('button',{onClick,className:cx('py-3 text-sm',active?'text-sky-600 font-semibold':'text-slate-600')},label);}
-      function CategoryBadge({cat}){const c=CATEGORIES.find(x=>x.key===cat);return React.createElement('span',{className:cx('inline-block text-xs rounded-full px-2 py-0.5 text-white bg-gradient-to-r',c?.color||'from-slate-500 to-slate-700')},c?.title||'دسته‌بندی');}
-
-      function PostCard({post}){
-        return React.createElement('article',{className:'rounded-xl overflow-hidden border border-slate-200 bg-white shadow_sm'},
-          post.embed
-            ? React.createElement('div',{className:'aspect-video w-full overflow-hidden bg-black/5'},
-                React.createElement('iframe',{src:post.embed,className:'w-full h-full',allowFullScreen:true})
-              )
-            : (post.cover
-                ? React.createElement('img',{src:post.cover, className:'w-full aspect-square object-cover', alt:post.title})
-                : React.createElement('div',{className:'aspect-square w_full bg-slate-100 flex items-center justify-center text-slate-400'},'پست')),
-          React.createElement('div',{className:'p-3 space-y-1'},
-            React.createElement('div',{className:'flex items-center justify-between'},
-              React.createElement('h4',{className:'font-bold text-sm line-clamp-1'},post.title),
-              post.category?React.createElement(CategoryBadge,{cat:post.category}):null
-            ),
-            React.createElement('p',{className:'text-xs text-slate-600 line-clamp-2'},post.caption||''),
-            React.createElement('a',{href:post.link,target:'_blank',rel:'noopener noreferrer',className:'text-xs text-sky-600'},'مشاهده در منبع')
-          )
-        );
-      }
-      function PostGrid({posts}){return React.createElement('div',{className:'grid grid-cols-2 gap-2'},posts.map(p=>React.createElement(PostCard,{key:p.id,post:p})));}
-      function PostRow({post}){
-        return React.createElement('article',{className:'flex gap-3 rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm p-3'},
-          React.createElement('div',{className:'w-24 h-24 overflow-hidden rounded-lg bg-black/5 flex items-center justify-center'},
-            post.cover ? React.createElement('img',{src:post.cover, className:'w-24 h-24 object-cover'}) : 'پست'
-          ),
-          React.createElement('div',{className:'flex-1'},
-            React.createElement('div',{className:'flex items-center justify_between'},
-              React.createElement('h4',{className:'font-bold'},post.title),
-              post.category?React.createElement(CategoryBadge,{cat:post.category}):null
-            ),
-            React.createElement('p',{className:'text-sm text-slate-600 line-clamp-2'},post.caption||''),
-            post.embed && React.createElement('details',{className:'mt-2'},
-              React.createElement('summary',{className:'cursor-pointer text-sky-600 text-sm'},'نمایش'),
-              React.createElement('div',{className:'mt-2 aspect-video w-full overflow-hidden rounded-lg'},
-                React.createElement('iframe',{src:post.embed,className:'w-full h-full',allowFullScreen:true})
-              )
-            ),
-            React.createElement('a',{href:post.link,target:'_blank',rel:'noopener noreferrer',className:'text-xs text-sky-600 mt-1 inline-block'},'مشاهده در منبع')
-          )
-        );
-      }
-      function PostList({posts}){return React.createElement('div',{className:'space-y-3'},posts.map(p=>React.createElement(PostRow,{key:p.id,post:p})));}
-
-      function Home({activeCat,setActiveCat,catPosts,setCatPosts}){
-        if(!activeCat){
-          return React.createElement('section',{className:'p-4 space-y-4'},
-            React.createElement('h2',{className:'font-bold text-lg'},'دسته‌ها'),
-            React.createElement('div',{className:'grid grid-cols-2 gap-3'},
-              CATEGORIES.map(cat=>React.createElement('button',{key:cat.key,onClick:()=>setActiveCat(cat.key),className:cx('rounded-2xl p-4 text-right text-white shadow-lg bg-gradient-to-br',cat.color)},
-                React.createElement('div',{className:'text-sm opacity-90'},'ورود به'),
-                React.createElement('div',{className:'text-xl font-extrabold mt-1'},cat.title)
-              ))
-            )
-          );
-        }
-        const cat=CATEGORIES.find(c=>c.key===activeCat);
-        const ch=CHANNELS[activeCat];
-        const [loading,setLoading]=React.useState(false);
-        const posts=catPosts[activeCat]||[];
-        React.useEffect(()=>{
-          if(!ch) return;
-          if(posts.length) return;
-          (async()=>{ setLoading(true); try{ const items=await fetchChannel(ch); setCatPosts(prev=>({...prev,[activeCat]:items})); } finally{ setLoading(false); } })();
-        },[activeCat]);
-        return React.createElement('section',{className:'p-4 space-y-4'},
-          React.createElement('div',{className:'flex items-center gap-3'},
-            React.createElement('button',{className:'px-3 py-1.5 rounded-full bg-slate-100 text-slate-700',onClick:()=>setActiveCat(null)},'← بازگشت'),
-            React.createElement('h2',{className:'text-xl font-extrabold'},cat.title)
-          ),
-          !ch ? React.createElement('p',{className:'text-rose-600'},'نام کانال برای این دسته تنظیم نشده است.')
-              : (loading ? React.createElement('p',{className:'text-slate-500'},'در حال بارگذاری…')
-                        : (posts.length ? React.createElement(PostList,{posts}) : React.createElement('p',{className:'text-slate-500'},'پستی یافت نشد.')))
-        );
-      }
-
-      function Explore({posts,loading}){
-        return React.createElement('section',{className:'p-4'},
-          React.createElement('h2',{className:'font-bold text-lg mb-3'},'اکسپلور (همه دسته‌ها باهم)'),
-          loading ? React.createElement('p',{className:'text-slate-500'},'در حال بارگذاری…')
-                  : (posts.length?React.createElement(PostGrid,{posts}):React.createElement('p',{className:'text-slate-500'},'فعلاً پستی نیست.'))
-        );
-      }
-
-      function Search({q,setQ,filtered,searchLoading}){
-        return React.createElement('section',{className:'p-4 space-y-4'},
-          React.createElement('div',{className:'relative'},
-            React.createElement('input',{
-              value:q,onChange:e=>setQ(e.target.value),
-              placeholder:'جستجو در عنوان و کپشن…',
-              className:'w-full rounded-2xl border border-slate-200 px-4 py-3 pr-10 focus:outline-none focus:ring-4 focus:ring-sky-100'
-            }),
-            React.createElement('div',{className:'absolute right-3 top-1/2 -translate-y-1/2 text-slate-400'},
-              React.createElement('svg',{className:'w-5 h-5',fill:'none',viewBox:'0 0 24 24',stroke:'currentColor'},
-                React.createElement('path',{strokeLinecap:'round',strokeLinejoin:'round',strokeWidth:1.5,d:'M21 21l-3.8-3.8M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z'})
-              )
-            )
-          ),
-          searchLoading ? React.createElement('p',{className:'text-slate-500'},'در حال بارگذاری…')
-                        : (q ? (filtered.length ? React.createElement(PostList,{posts:filtered})
-                                                : React.createElement('p',{className:'text-slate-500'},'چیزی پیدا نشد.'))
-                             : React.createElement('p',{className:'text-slate-500'},'کلیدواژه بنویسید…'))
-        );
-      }
-
-      function About(){
-        return React.createElement('section',{className:'p-6 space-y-3'},
-          React.createElement('h2',{className:'text-xl font-extrabold'},'درباره ما'),
-          React.createElement('p',{className:'text-slate-700 leading-8'},'نمایش خودکار پست‌های کانال‌های عمومی ایتا.'),
-          React.createElement('div',{className:'text-sm text-slate-500'},'اگر ساختار HTML ایتا تغییر کند، اسکرپر باید به‌روزرسانی شود.')
-        );
-      }
-
-      const root=ReactDOM.createRoot(document.getElementById('root'));
-      root.render(React.createElement(App));
-    </script>
-  </body>
+    const root=ReactDOM.createRoot(document.getElementById('root'));
+    root.render(React.createElement(App));
+  </script>
+</body>
 </html>
