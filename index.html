@@ -2,283 +2,163 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>شبکه سلامت</title>
-  <meta name="theme-color" content="#10b981">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>شبکه سلامت – اتصال به تلگرام</title>
+
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
   <style>
-    :root{
-      --bg:#0b141a; --panel:#0f1b22; --soft:#13232c; --soft2:#1a2f39;
-      --text:#e5f0f4; --muted:#97a8b2; --brand:#10b981; --brand2:#059669; --stroke:#1f3642;
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;background:var(--bg);color:var(--text);font-family:Vazirmatn,system-ui,tahoma,arial,sans-serif}
-    .wrap{max-width:920px;margin:0 auto;padding:16px 14px 90px}
-    header h1{margin:0;font-size:22px;font-weight:800}
-    header .subtitle{color:var(--muted);font-size:12px;margin-top:4px}
-    .muted{color:var(--muted);font-size:12px}
-
-    /* category grid */
-    .catgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
-    @media(min-width:680px){.catgrid{grid-template-columns:repeat(5,1fr)}}
-    .catcard{background:linear-gradient(180deg,rgba(16,185,129,.14),rgba(16,24,28,.4));border:1px solid var(--stroke);
-      border-radius:14px;padding:16px;cursor:pointer;display:flex;align-items:end;min-height:92px}
-    .catcard b{font-size:14px}
-
-    /* chips */
-    .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 6px}
-    .chip{background:var(--soft);border:1px solid var(--stroke);padding:8px 12px;border-radius:999px;cursor:pointer}
-    .chip.active{background:var(--brand);border-color:var(--brand);color:#041b12}
-
-    /* cards */
-    .cards{display:grid;grid-template-columns:1fr;gap:12px;margin-top:10px}
-    @media(min-width:640px){.cards{grid-template-columns:1fr 1fr}}
-    .card{background:var(--panel);border:1px solid var(--stroke);border-radius:14px;padding:12px;cursor:pointer}
-    .title{font-weight:700;margin:0 0 6px}
-    .snippet{color:#cfe2ea;font-size:14px;line-height:1.9;white-space:pre-wrap}
-    .row{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
-    .tagpill{font-size:11px;background:var(--soft2);border:1px solid var(--stroke);padding:4px 8px;border-radius:999px;margin-left:6px}
-    a.btn{background:var(--brand);color:#062016;text-decoration:none;padding:8px 12px;border-radius:10px}
-
-    /* search */
-    .search{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--stroke);background:var(--panel);color:var(--text)}
-
-    /* bottom tabs */
-    .tabs{position:fixed;left:0;right:0;bottom:0;background:rgba(4,13,17,.7);backdrop-filter:blur(12px);
-      border-top:1px solid var(--stroke);display:flex;justify-content:space-around;gap:8px;padding:10px 12px}
-    .tabbtn{flex:1;background:var(--soft);border:1px solid var(--stroke);color:var(--text);border-radius:12px;padding:10px;cursor:pointer}
-    .tabbtn.active{background:var(--brand);border-color:var(--brand);color:#062016;font-weight:700}
-
-    .hero{background:linear-gradient(180deg,rgba(16,185,129,.15),transparent);border:1px solid var(--stroke);
-      padding:14px;border-radius:14px;margin-top:12px}
-
-    /* modal */
-    .modal{position:fixed;inset:0;display:none;align-items:flex-end}
-    @media(min-width:640px){.modal{align-items:center;justify-content:center}}
-    .backdrop{position:absolute;inset:0;background:rgba(0,0,0,.5)}
-    .sheet{position:relative;background:var(--panel);border:1px solid var(--stroke);border-radius:18px 18px 0 0;
-      padding:16px 14px 14px;max-height:80vh;overflow:auto;width:100%}
-    @media(min-width:640px){.sheet{border-radius:16px;max-width:680px}}
-    .close{position:absolute;left:12px;top:10px;background:var(--soft2);border:1px solid var(--stroke);border-radius:8px;padding:6px 10px;cursor:pointer}
+    :root{ color-scheme: light dark; }
+    html,body{ background:#0b1220; color:#e7eef7; }
+    .card{ background:#0f172a; border:1px solid #1e293b; }
+    .muted{ color:#93a4b8 }
+    .chip{ background:#0b253a; border:1px solid #1f3a57 }
+    .tabbtn{ background:#0b253a; border:1px solid #1f3a57 }
+    .tabbtn.active{ background:#0284c7; border-color:#0284c7; color:#fff }
+    .btn{ background:#0284c7 }
   </style>
+
+  <meta name="theme-color" content="#0b1220">
+  <link rel="apple-touch-icon" href="icon-192.png">
 </head>
-<body>
-  <div class="wrap">
-    <header>
-      <h1>شبکه سلامت</h1>
-      <div class="subtitle">نسخه آزمایشی – اتصال به تلگرام</div>
-    </header>
-    <section id="screen"></section>
-  </div>
-<nav class="tabs">
-    <button class="tabbtn" data-tab="home">خانه</button>
-    <button class="tabbtn" data-tab="explore">اکسپلور</button>
-    <button class="tabbtn" data-tab="search">جستجو</button>
-    <button class="tabbtn" data-tab="about">درباره ما</button>
+<body class="max-w-screen-md mx-auto min-h-[100svh] pb-24 px-4">
+
+  <header class="py-5">
+    <h1 class="text-2xl font-extrabold">شبکه سلامت</h1>
+    <p class="muted">نسخه آزمایشی – اتصال به تلگرام</p>
+  </header>
+
+  <main id="app" class="space-y-4"></main>
+
+  <nav class="fixed inset-x-0 bottom-0 z-50">
+    <div class="mx-auto max-w-screen-md bg-[#0f172a]/80 backdrop-blur-xl border-t border-slate-700">
+      <div class="grid grid-cols-4 gap-2 p-2">
+        <button class="tabbtn rounded-xl py-2 text-sm" data-tab="home">خانه</button>
+        <button class="tabbtn rounded-xl py-2 text-sm" data-tab="explore">اکسپلور</button>
+        <button class="tabbtn rounded-xl py-2 text-sm" data-tab="search">جستجو</button>
+        <button class="tabbtn rounded-xl py-2 text-sm" data-tab="about">درباره ما</button>
+      </div>
+    </div>
   </nav>
 
-  <!-- modal -->
-  <div class="modal" id="modal">
-    <div class="backdrop" id="modalBg"></div>
-    <div class="sheet" id="modalSheet">
-      <button class="close" id="modalClose">بستن</button>
-      <div id="modalBody"></div>
-    </div>
-  </div>
-
   <script>
-  /********* 1) API URL *****/
-  const API_URL = "https://script.google.com/macros/s/AKfycbzGdV4ci9cfX8e8_3a-nyH2hcX1NduOx-U7CrSVpAjLfazjHdxScPe3Hfxv78NRS0Eevw/exec"; // ← لینک exec خودت
-
-  /********* 2) تعریف دسته‌ها: بر اساس هشتگ *****/
+  const API_URL = "https://script.google.com/macros/s/XXXXXXXXXXXXXXXXXXXXXXXXXXXX/exec";
   const CAT_TAGS = {
-    mental:   ["#سلامت_روان","#روان","#روانشناسی"],
-    nutrition:["#تغذیه","#رژیم","#غذا"],
-    dental:   ["#دهان","#دندان","#دندانپزشکی"],
-    disease:  ["#بیماری","#پیشگیری","#درمان"],
-    family:   ["#سلامت_خانواده","#کودک","#مادر"]
-  };
-  const CAT_TITLES = {
-    mental:"سلامت روان", nutrition:"تغذیه", dental:"دهان و دندان",
-    disease:"بیماری‌ها", family:"سلامت خانواده"
+    "سلامت روان": ["#سلامت_روان","#روان"],
+    "تغذیه": ["#تغذیه","#رژیم","#غذا"],
+    "دهان و دندان": ["#دهان_و_دندان","#دندان"],
+    "بیماری‌ها": ["#بیماری","#بیماری‌ها","#پیشگیری"],
+    "سلامت خانواده": ["#خانواده","#بارداری","#کودک"]
   };
 
-  /********* 3) حالت برنامه *****/
-  const state = {
-    tab:"home",
-    q:"",
-    all:[],
-    byCat:{},
-    activeCat:null
-  };
+  const state = { tab: "home", items: [], byCat: {}, activeCat: null, q: "" };
+  const app = document.getElementById('app');
 
-  const screen = document.getElementById("screen");
-  const modal  = document.getElementById("modal");
-  const modalBg= document.getElementById("modalBg");
-  const modalClose= document.getElementById("modalClose");
-  const modalBody= document.getElementById("modalBody");
-  modalBg.onclick = modalClose.onclick = ()=> modal.style.display="none";
+  const esc = s => (s??"").toString()
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
+    .replace(/'/g,"&#39;");
+  const cut = (s,n)=> !s? "" : (s.length>n? (s.slice(0,n)+"…") : s);
 
-  /********* 4) دریافت دیتا *****/
-  async function fetchItems(){
+  async function loadData(){
     try{
       const r = await fetch(API_URL, {cache:"no-store"});
-      const j = await r.json();
-      const items = Array.isArray(j.items)? j.items : [];
-      state.all = items.map(x => ({
-        id: String(x.id || ""),
-        date: x.date || "",
-        title: (x.title || "").trim(),
-        caption: (x.caption || "").trim(),
-        tags: Array.isArray(x.tags) ? x.tags : String(x.tags||"").split(",").map(s=>s.trim()).filter(Boolean),
-        link: x.link || "#"
-      }));
-      state.byCat = buildCategories(state.all);
-      render();
-    }catch(err){
-      screen.innerHTML = <div class="hero"><div class="muted">خطا در دریافت داده‌ها</div><div class="muted" style="margin-top:6px">${err}</div></div>;
-    }
-  }
-
-  function buildCategories(list){
-    const out = {mental:[],nutrition:[],dental:[],disease:[],family:[]};
-    for(const p of list){
-      const tgs = (p.tags||[]).map(t=>t.toLowerCase());
-      for(const key of Object.keys(CAT_TAGS)){
-        const keys = CAT_TAGS[key].map(s=>s.toLowerCase());
-        if(tgs.some(t => keys.includes(t))) out[key].push(p);
-      }
-    }
-    return out;
-  }
-
-  /********* 5) رندر تب‌ها *****/
-  function render(){
-    if(state.tab==="home") renderHome();
-    if(state.tab==="explore") renderExplore();
-    if(state.tab==="search") renderSearch();
-    if(state.tab==="about") renderAbout();
-    document.querySelectorAll(".tabbtn").forEach(b=>{
-      b.className="tabbtn"+(b.getAttribute("data-tab")===state.tab?" active":"");
-    });
-  }
-
-  function renderHome(){
-    // اگر دسته انتخاب نشده، گرید دسته‌ها را نشان بده
-    if(!state.activeCat){
-      let html = <div class="muted" style="margin-top:6px">یک دسته را انتخاب کنید.</div>
-                  <div class="catgrid">;
-      for(const key of Object.keys(CAT_TITLES)){
-        html += <div class="catcard" data-gocat="${key}"><b>${CAT_TITLES[key]}</b></div>;
-      }
-      html += </div>;
-      screen.innerHTML = html;
-      screen.querySelectorAll("[data-gocat]").forEach(el=>{
-        el.onclick=()=>{ state.activeCat = el.getAttribute("data-gocat"); render(); };
+      if(!r.ok) throw new Error("API "+r.status);
+      const json = await r.json();
+      const items = (json.items || []).map(x=>{
+        const tags = Array.isArray(x.tags)
+            ? x.tags
+            : (x.tags||"").split(/[,\s]+/).filter(Boolean);
+        return {
+          id: x.id ?? "",
+          date: x.date ?? "",
+          title: x.title ?? "",
+          caption: x.caption ?? "",
+          tags,
+          link: x.link ?? ""
+        };
       });
-      return;
+      items.sort((a,b)=> new Date(b.date) - new Date(a.date));
+      state.items = items;
+      buildCategories();
+      render();
+    }catch(e){
+      app.innerHTML = `<div class="card rounded-2xl p-5"><div class="text-red-400 font-bold mb-2">خطا در دریافت داده‌ها</div><div class="muted text-sm">${esc(e.message)}</div></div>`;
     }
-    // در صورت انتخاب دسته
-const list = state.byCat[state.activeCat] || [];
-    let html = <div class="chips">
-      <span class="chip" data-back="1">← بازگشت</span>
-      <span class="chip active">${CAT_TITLES[state.activeCat]}</span>
-    </div>;
-    html += cards(list,true);
-    screen.innerHTML = html;
-    const back = screen.querySelector("[data-back]");
-    if(back) back.onclick=()=>{ state.activeCat=null; render(); };
   }
 
-  function renderExplore(){
-    const mixed = [...state.all].sort((a,b)=> (b.date||"").localeCompare(a.date||""));
-    screen.innerHTML = <div class="muted" style="margin:6px 0 10px">آخرین پست‌ها</div> + cards(mixed,true);
-  }
-
-  function renderSearch(){
-    let html = <input id="q" class="search" placeholder="جستجو در عنوان/کپشن/هشتگ…"
-                value="${esc(state.q)}">;
-    let res = [];
-    if(state.q){
-      const q = state.q.toLowerCase();
-      res = state.all.filter(p => (
-        (p.title||"").toLowerCase().includes(q) ||
-        (p.caption||"").toLowerCase().includes(q) ||
-        (p.tags||[]).join(" ").toLowerCase().includes(q)
-      ));
-      html += <div class="muted" style="margin:8px 2px">${res.length} نتیجه</div>;
-    }else{
-      html += <div class="muted" style="margin:8px 2px">کلیدواژه را بنویسید…</div>;
+  function buildCategories(){
+    const byCat = {};
+    Object.keys(CAT_TAGS).forEach(cat => byCat[cat] = []);
+    for(const p of state.items){
+      for(const [cat, tags] of Object.entries(CAT_TAGS)){
+        if (p.tags.some(t => tags.includes(t))) byCat[cat].push(p);
+      }
     }
-    html += cards(res,true);
-    screen.innerHTML = html;
-    document.getElementById("q").oninput = (e)=>{ state.q = e.target.value; render(); };
+    state.byCat = byCat;
   }
 
-  function renderAbout(){
-    screen.innerHTML = 
-      <div class="hero">
-        <b>درباره ما</b>
-        <p class="muted" style="margin-top:8px">
-          این نسخهٔ آزمایشی پست‌های کانال تلگرام را از طریق Google Apps Script/Sheets می‌خواند
-          و در یک رابط موبایل‌پسند نمایش می‌دهد. هشتگ‌ها دسته‌بندی‌ها را تعیین می‌کنند.
-        </p>
-      </div>;
-  }
-
-  /********* 6) ساخت کارت‌ها + پنجرهٔ کپشن کامل *****/
-  function cards(list){
-    if(!list || !list.length) return <div class="muted" style="margin-top:10px">چیزی برای نمایش نیست.</div>;
-    return <div class="cards"> + list.map(p=>{
-      const tags = (p.tags||[]).map(t=><span class="tagpill">${esc(t)}</span>).join(" ");
-      const date = p.date ? new Date(p.date).toLocaleString('fa-IR') : "";
-      const snip = cut(p.caption||"", 180);
-      const pid = esc(p.id);
-      return 
-        <div class="card" data-open="${pid}">
-          <div class="title">${esc(p.title || "بدون عنوان")}</div>
-          <div class="snippet">${esc(snip)}</div>
-          <div class="row">
-            <span class="muted">${date}</span>
-            <span class="muted">مشاهده کپشن…</span>
-          </div>
-          <div style="margin-top:8px">${tags}</div>
+  function postCards(list, showCatBadge=false){
+    if(!list?.length) return '<div class="muted text-sm px-1">چیزی برای نمایش نیست.</div>';
+    return list.map(p=>{
+      const dateTxt = p.date ? new Date(p.date).toLocaleString('fa-IR') : '';
+      const tagsHtml = (p.tags||[]).slice(0,5).map(t=>`<span class="chip inline-block text-xs px-2 py-1 rounded-lg me-1 mb-1">${esc(t)}</span>`).join('');
+      const catBadge = showCatBadge ? `<span class="chip text-xs px-2 py-1 rounded-lg">${findCatFor(p) || "متفرقه"}</span>` : '';
+      return `<article class="card rounded-2xl p-4">
+        <div class="flex items-center justify-between"><h3 class="font-bold text-base">${esc(p.title || "بدون عنوان")}</h3>${catBadge}</div>
+        <p class="muted mt-1 text-sm">${esc(cut(p.caption,220))}</p>
+        <div class="mt-3">${tagsHtml}</div>
+        <div class="flex items-center justify-between mt-4">
+          <span class="muted text-xs">${esc(dateTxt)}</span>
+          <a class="btn text-sm px-3 py-2 rounded-xl" target="_blank" rel="noopener" href="${esc(p.link)}">مشاهده در تلگرام</a>
         </div>
-        <template id="tpl-${pid}">
-          <h3 style="margin:0 0 6px">${esc(p.title||"بدون عنوان")}</h3>
-          <div class="muted" style="margin-bottom:10px">${date}</div>
-          <div style="white-space:pre-wrap;line-height:1.9">${esc(p.caption||"")}</div>
-          <div style="margin-top:10px">${tags}</div>
-          <div class="row" style="margin-top:12px">
-            <span></span>
-            <a class="btn" href="${p.link}" target="_blank" rel="noopener">مشاهده در تلگرام</a>
-          </div>
-        </template>;
-    }).join("") + </div>;
+      </article>`;
+    }).join('');
   }
 
-  // رویداد کلیک کارت‌ها برای باز کردن مودال
-  document.addEventListener("click", (e)=>{
-    const el = e.target.closest("[data-open]");
-    if(!el) return;
-    const id = el.getAttribute("data-open");
-    const tpl = document.getElementById("tpl-"+id);
-    if(!tpl) return;
-    modalBody.innerHTML = tpl.innerHTML;
-    modal.style.display = "flex";
-  });
+  function findCatFor(p){
+    for(const [cat,tags] of Object.entries(CAT_TAGS)){
+      if(p.tags?.some(t=>tags.includes(t))) return cat;
+    }
+    return null;
+  }
 
-  /********* 7) ابزارک‌ها *****/
-  function esc(s){return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");}
-  function cut(s,n){return s.length>n? s.slice(0,n)+"…" : s;}
+  function render(){
+    document.querySelectorAll('.tabbtn').forEach(b=>{
+      const t = b.getAttribute('data-tab');
+      b.className = 'tabbtn rounded-xl py-2 text-sm' + (t===state.tab ? ' active' : '');
+    });
 
-  // تب‌ها
-  document.querySelectorAll(".tabbtn").forEach(b=>{
-    b.onclick = ()=>{ state.tab = b.getAttribute("data-tab"); render(); };
-  });
+    if(state.tab === 'home'){
+      if(!state.activeCat){
+        const cats = Object.keys(CAT_TAGS);
+        app.innerHTML = `<section class="space-y-3"><h2 class="text-lg font-bold">دسته‌بندی‌ها</h2>
+          <div class="flex flex-wrap gap-2">${cats.map(c=>`<button class="chip px-3 py-2 rounded-xl" data-gocat="${esc(c)}">${esc(c)}</button>`).join('')}</div></section>`;
+        app.querySelectorAll('[data-gocat]').forEach(el=>{ el.onclick = ()=>{ state.activeCat = el.getAttribute('data-gocat'); render(); }; });
+      }else{
+        const back = `<div class="flex items-center gap-3 mb-3"><button class="tabbtn rounded-xl px-3 py-2 text-sm" id="backHome">← بازگشت</button><h2 class="text-lg font-bold m-0">${esc(state.activeCat)}</h2></div>`;
+        const list = state.byCat[state.activeCat] || [];
+        app.innerHTML = back + postCards(list);
+        document.getElementById('backHome').onclick = ()=>{ state.activeCat=null; render(); };
+      }
+    }
+    else if(state.tab === 'explore'){
+      app.innerHTML = `<h2 class="text-lg font-bold">اکسپلور</h2>${postCards(state.items,true)}`;
+    }
+    else if(state.tab === 'search'){
+      const q = state.q.trim().toLowerCase();
+      const list = !q ? [] : state.items.filter(p=>{ const hay = (p.title+" "+p.caption+" "+(p.tags||[]).join(" ")).toLowerCase(); return hay.includes(q); });
+      app.innerHTML = `<div class="card rounded-2xl p-4"><input id="q" class="w-full bg-transparent outline-none border border-slate-700 rounded-xl px-4 py-3" placeholder="جستجو…" value="${esc(state.q)}"></div><div class="mt-4">${postCards(list,true)}</div>`;
+      document.getElementById('q').oninput = e=>{ state.q = e.target.value; render(); };
+    }
+    else if(state.tab === 'about'){
+      app.innerHTML = `<section class="card rounded-2xl p-5 space-y-3"><h2 class="text-lg font-bold">درباره ما</h2><p class="muted leading-7">این نسخه‌ی آزمایشی، پست‌های کانال تلگرام را از طریق Google Apps Script خوانده و با رابط کاربری موبایلی نمایش می‌دهد.</p></section>`;
+    }
+  }
 
-  // شروع
-  render();
-  fetchItems();
+  document.querySelectorAll('.tabbtn').forEach(btn=>{ btn.onclick = ()=>{ state.tab = btn.getAttribute('data-tab'); render(); }; });
+  render(); loadData();
   </script>
 </body>
 </html>
