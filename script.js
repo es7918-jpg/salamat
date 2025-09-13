@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/YOUR_EXEC_ID/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwL163LePEwdXHl0_jwfgirHgn9biiXNwxAF9keLodHmlePXNnVhSFqFzXez5uHjFAIMg/exec";
 
 const state = { tab:"explore", all:[], q:"" };
 const app = document.getElementById("app");
