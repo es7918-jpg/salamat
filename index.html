@@ -2,106 +2,283 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-  <title>شبکه سلامت – بله</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0ea5e9">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>شبکه سلامت</title>
+  <meta name="theme-color" content="#10b981">
   <style>
-    :root { --brand:#0ea5e9; }
-    * { box-sizing:border-box }
-    body{font-family:tahoma,arial,sans-serif;margin:0;background:#f9fafb;color:#111;
-         max-width:420px;margin:0 auto;display:flex;flex-direction:column;height:100vh}
-    header{padding:14px;text-align:center;font-weight:700;font-size:18px;
-            background:linear-gradient(90deg,#0ea5e9,#06b6d4);color:#fff;position:sticky;top:0;z-index:2}
-    main{flex:1;overflow-y:auto;padding:12px}
-    .tabs{display:flex;justify-content:space-around;border-top:1px solid #e5e7eb;
-           background:#fff;position:sticky;bottom:0;z-index:2}
-    .tabbtn{flex:1;padding:12px 0;font-size:13px;border:0;background:none;cursor:pointer}
-    .tabbtn.active{color:var(--brand);font-weight:bold}
-    .catgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-    .catbtn{padding:20px;border-radius:16px;color:#fff;text-align:right;
-            font-size:14px;font-weight:bold;cursor:pointer;min-height:100px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
-    .cat-mental{background:linear-gradient(135deg,#06b6d4,#0ea5e9)}
-    .cat-nutrition{background:linear-gradient(135deg,#22c55e,#84cc16)}
-    .cat-dental{background:linear-gradient(135deg,#6366f1,#a78bfa)}
-    .cat-disease{background:linear-gradient(135deg,#f43f5e,#fb923c)}
-    .cat-family{background:linear-gradient(135deg,#ec4899,#f472b6)}
-    .card{background:#fff;border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,.05);
-          margin-bottom:12px;overflow:hidden;border:1px solid #eef2f7}
-    .card h3{margin:0;font-size:15px;padding:10px}
-    .card p{margin:0;padding:0 10px 10px;font-size:13px;color:#374151;line-height:1.7;white-space:pre-wrap}
-    .player img,.player video{width:100%;display:block;background:#000}
-    input.search{width:100%;padding:10px;border:1px solid #ddd;border-radius:12px;font-size:14px}
-    .back{margin-bottom:10px;padding:6px 12px;border-radius:12px;border:1px solid #ddd;
-          background:#fff;cursor:pointer;font-size:13px}
-    .muted{color:#64748b;font-size:12px;text-align:center;margin:8px 0}
+    :root{
+      --bg:#0b141a; --panel:#0f1b22; --soft:#13232c; --soft2:#1a2f39;
+      --text:#e5f0f4; --muted:#97a8b2; --brand:#10b981; --brand2:#059669; --stroke:#1f3642;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);color:var(--text);font-family:Vazirmatn,system-ui,tahoma,arial,sans-serif}
+    .wrap{max-width:920px;margin:0 auto;padding:16px 14px 90px}
+    header h1{margin:0;font-size:22px;font-weight:800}
+    header .subtitle{color:var(--muted);font-size:12px;margin-top:4px}
+    .muted{color:var(--muted);font-size:12px}
+
+    /* category grid */
+    .catgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+    @media(min-width:680px){.catgrid{grid-template-columns:repeat(5,1fr)}}
+    .catcard{background:linear-gradient(180deg,rgba(16,185,129,.14),rgba(16,24,28,.4));border:1px solid var(--stroke);
+      border-radius:14px;padding:16px;cursor:pointer;display:flex;align-items:end;min-height:92px}
+    .catcard b{font-size:14px}
+
+    /* chips */
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 6px}
+    .chip{background:var(--soft);border:1px solid var(--stroke);padding:8px 12px;border-radius:999px;cursor:pointer}
+    .chip.active{background:var(--brand);border-color:var(--brand);color:#041b12}
+
+    /* cards */
+    .cards{display:grid;grid-template-columns:1fr;gap:12px;margin-top:10px}
+    @media(min-width:640px){.cards{grid-template-columns:1fr 1fr}}
+    .card{background:var(--panel);border:1px solid var(--stroke);border-radius:14px;padding:12px;cursor:pointer}
+    .title{font-weight:700;margin:0 0 6px}
+    .snippet{color:#cfe2ea;font-size:14px;line-height:1.9;white-space:pre-wrap}
+    .row{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+    .tagpill{font-size:11px;background:var(--soft2);border:1px solid var(--stroke);padding:4px 8px;border-radius:999px;margin-left:6px}
+    a.btn{background:var(--brand);color:#062016;text-decoration:none;padding:8px 12px;border-radius:10px}
+
+    /* search */
+    .search{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--stroke);background:var(--panel);color:var(--text)}
+
+    /* bottom tabs */
+    .tabs{position:fixed;left:0;right:0;bottom:0;background:rgba(4,13,17,.7);backdrop-filter:blur(12px);
+      border-top:1px solid var(--stroke);display:flex;justify-content:space-around;gap:8px;padding:10px 12px}
+    .tabbtn{flex:1;background:var(--soft);border:1px solid var(--stroke);color:var(--text);border-radius:12px;padding:10px;cursor:pointer}
+    .tabbtn.active{background:var(--brand);border-color:var(--brand);color:#062016;font-weight:700}
+
+    .hero{background:linear-gradient(180deg,rgba(16,185,129,.15),transparent);border:1px solid var(--stroke);
+      padding:14px;border-radius:14px;margin-top:12px}
+
+    /* modal */
+    .modal{position:fixed;inset:0;display:none;align-items:flex-end}
+    @media(min-width:640px){.modal{align-items:center;justify-content:center}}
+    .backdrop{position:absolute;inset:0;background:rgba(0,0,0,.5)}
+    .sheet{position:relative;background:var(--panel);border:1px solid var(--stroke);border-radius:18px 18px 0 0;
+      padding:16px 14px 14px;max-height:80vh;overflow:auto;width:100%}
+    @media(min-width:640px){.sheet{border-radius:16px;max-width:680px}}
+    .close{position:absolute;left:12px;top:10px;background:var(--soft2);border:1px solid var(--stroke);border-radius:8px;padding:6px 10px;cursor:pointer}
   </style>
 </head>
 <body>
-  <header>شبکه سلامت</header>
-  <main id="app"></main>
-  <nav class="tabs">
+  <div class="wrap">
+    <header>
+      <h1>شبکه سلامت</h1>
+      <div class="subtitle">نسخه آزمایشی – اتصال به تلگرام</div>
+    </header>
+    <section id="screen"></section>
+  </div>
+<nav class="tabs">
     <button class="tabbtn" data-tab="home">خانه</button>
     <button class="tabbtn" data-tab="explore">اکسپلور</button>
     <button class="tabbtn" data-tab="search">جستجو</button>
     <button class="tabbtn" data-tab="about">درباره ما</button>
   </nav>
 
-<script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzD3VpdORC7bZiR9VKMRQjpIzRItEroC1FeKStuNQ5VGZW-yY0NNms7lEpGHId6UZVleQ/exec";
-const CAT_TITLES={mental:"سلامت روان",nutrition:"تغذیه",dental:"دهان و دندان",disease:"بیماری‌ها",family:"سلامت خانواده"};
-const state={tab:'home',activeCat:null,lists:{mental:[],nutrition:[],dental:[],disease:[],family:[]},explore:[],searchPool:[],q:''};
-const app=document.getElementById('app');
+  <!-- modal -->
+  <div class="modal" id="modal">
+    <div class="backdrop" id="modalBg"></div>
+    <div class="sheet" id="modalSheet">
+      <button class="close" id="modalClose">بستن</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
 
-function esc(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
-function renderCards(list){if(!list.length)return'<p class="muted">موردی نیست</p>';
-return list.map(p=>'<div class="card">'
-  +'<h3>'+esc(p.title||'پست')+'</h3>'
-  +(p.text?'<p>'+esc(p.text)+'</p>':'')
-  +(p.kind==='photo'&&p.file_url?'<div class="player"><img src="'+p.file_url+'"></div>':'')
-  +(p.kind==='video'&&p.file_url?'<div class="player"><video controls playsinline preload="metadata" src="'+p.file_url+'"></video></div>':'')
-  +'</div>').join('')}
+  <script>
+  /********* 1) API URL *****/
+  const API_URL = "https://script.google.com/macros/s/AKfycbzGdV4ci9cfX8e8_3a-nyH2hcX1NduOx-U7CrSVpAjLfazjHdxScPe3Hfxv78NRS0Eevw/exec"; // ← لینک exec خودت
 
-function render(){
-  let html="";
-  if(state.tab==='home'){
-    if(!state.activeCat){
-      html='<div class="catgrid">'
-        +'<div class="catbtn cat-mental" data-gocat="mental">سلامت روان</div>'
-        +'<div class="catbtn cat-nutrition" data-gocat="nutrition">تغذیه</div>'
-        +'<div class="catbtn cat-dental" data-gocat="dental">دهان و دندان</div>'
-        +'<div class="catbtn cat-disease" data-gocat="disease">بیماری‌ها</div>'
-        +'<div class="catbtn cat-family" data-gocat="family">سلامت خانواده</div>'
-        +'</div>';
-    }else{
-      const k=state.activeCat, lst=state.lists[k]||[];
-      html='<button class="back" data-back="1">← بازگشت</button><h2 style="margin:6px 0">'+CAT_TITLES[k]+'</h2>'+renderCards(lst);
+  /********* 2) تعریف دسته‌ها: بر اساس هشتگ *****/
+  const CAT_TAGS = {
+    mental:   ["#سلامت_روان","#روان","#روانشناسی"],
+    nutrition:["#تغذیه","#رژیم","#غذا"],
+    dental:   ["#دهان","#دندان","#دندانپزشکی"],
+    disease:  ["#بیماری","#پیشگیری","#درمان"],
+    family:   ["#سلامت_خانواده","#کودک","#مادر"]
+  };
+  const CAT_TITLES = {
+    mental:"سلامت روان", nutrition:"تغذیه", dental:"دهان و دندان",
+    disease:"بیماری‌ها", family:"سلامت خانواده"
+  };
+
+  /********* 3) حالت برنامه *****/
+  const state = {
+    tab:"home",
+    q:"",
+    all:[],
+    byCat:{},
+    activeCat:null
+  };
+
+  const screen = document.getElementById("screen");
+  const modal  = document.getElementById("modal");
+  const modalBg= document.getElementById("modalBg");
+  const modalClose= document.getElementById("modalClose");
+  const modalBody= document.getElementById("modalBody");
+  modalBg.onclick = modalClose.onclick = ()=> modal.style.display="none";
+
+  /********* 4) دریافت دیتا *****/
+  async function fetchItems(){
+    try{
+      const r = await fetch(API_URL, {cache:"no-store"});
+      const j = await r.json();
+      const items = Array.isArray(j.items)? j.items : [];
+      state.all = items.map(x => ({
+        id: String(x.id || ""),
+        date: x.date || "",
+        title: (x.title || "").trim(),
+        caption: (x.caption || "").trim(),
+        tags: Array.isArray(x.tags) ? x.tags : String(x.tags||"").split(",").map(s=>s.trim()).filter(Boolean),
+        link: x.link || "#"
+      }));
+      state.byCat = buildCategories(state.all);
+      render();
+    }catch(err){
+      screen.innerHTML = <div class="hero"><div class="muted">خطا در دریافت داده‌ها</div><div class="muted" style="margin-top:6px">${err}</div></div>;
     }
-  }else if(state.tab==='explore'){ html=renderCards(state.explore); }
-  else if(state.tab==='search'){
-    html='<input class="search" id="q" placeholder="جستجو...">';
-    const q=state.q.trim().toLowerCase();
-    const results=q?state.searchPool.filter(p=>((p.title||'')+' '+(p.text||'')).toLowerCase().includes(q)):[];
-    html+=results.length?renderCards(results):'<p class="muted">کلیدواژه را بنویسید…</p>';
-  }else html='<p style="padding:16px;line-height:1.8">این نسخه‌ی موبایلی شبکه سلامت است. داده‌ها از کانال بله خوانده می‌شوند. می‌توانید از منو پایین جابه‌جا شوید و از «افزودن به صفحهٔ اصلی» آن را مثل اپ نصب کنید.</p>';
-  app.innerHTML=html;
-  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===state.tab));
-  app.onclick=e=>{const k=e.target.getAttribute('data-gocat');if(k){state.activeCat=k;render();return} if(e.target.getAttribute('data-back')){state.activeCat=null;render()}};
-  const qi=document.getElementById('q');if(qi)qi.oninput=()=>{state.q=qi.value;render()};
-}
+  }
 
-async function load(){
-  try{const res=await fetch(API_URL);const data=await res.json();const raw=data.items||[];
-    const lists={mental:[],nutrition:[],dental:[],disease:[],family:[]},mix=[];
-    raw.forEach(it=>{if(it.cat&&lists[it.cat])lists[it.cat].push(it);mix.push(it)});
-    state.lists=lists;state.explore=mix;state.searchPool=mix;render();
-  }catch(e){app.innerHTML='<p class="muted" style="color:#e11d48">خطا در ارتباط با API</p>';console.error(e);}
-}
+  function buildCategories(list){
+    const out = {mental:[],nutrition:[],dental:[],disease:[],family:[]};
+    for(const p of list){
+      const tgs = (p.tags||[]).map(t=>t.toLowerCase());
+      for(const key of Object.keys(CAT_TAGS)){
+        const keys = CAT_TAGS[key].map(s=>s.toLowerCase());
+        if(tgs.some(t => keys.includes(t))) out[key].push(p);
+      }
+    }
+    return out;
+  }
 
-document.querySelectorAll('.tabs .tabbtn').forEach(btn=>btn.onclick=()=>{state.tab=btn.dataset.tab;if((state.tab==='explore'||state.tab==='search')&&!state.explore.length)load();render()});
-render();load();
+  /********* 5) رندر تب‌ها *****/
+  function render(){
+    if(state.tab==="home") renderHome();
+    if(state.tab==="explore") renderExplore();
+    if(state.tab==="search") renderSearch();
+    if(state.tab==="about") renderAbout();
+    document.querySelectorAll(".tabbtn").forEach(b=>{
+      b.className="tabbtn"+(b.getAttribute("data-tab")===state.tab?" active":"");
+    });
+  }
 
-if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(console.warn)); }
-</script>
+  function renderHome(){
+    // اگر دسته انتخاب نشده، گرید دسته‌ها را نشان بده
+    if(!state.activeCat){
+      let html = <div class="muted" style="margin-top:6px">یک دسته را انتخاب کنید.</div>
+                  <div class="catgrid">;
+      for(const key of Object.keys(CAT_TITLES)){
+        html += <div class="catcard" data-gocat="${key}"><b>${CAT_TITLES[key]}</b></div>;
+      }
+      html += </div>;
+      screen.innerHTML = html;
+      screen.querySelectorAll("[data-gocat]").forEach(el=>{
+        el.onclick=()=>{ state.activeCat = el.getAttribute("data-gocat"); render(); };
+      });
+      return;
+    }
+    // در صورت انتخاب دسته
+const list = state.byCat[state.activeCat] || [];
+    let html = <div class="chips">
+      <span class="chip" data-back="1">← بازگشت</span>
+      <span class="chip active">${CAT_TITLES[state.activeCat]}</span>
+    </div>;
+    html += cards(list,true);
+    screen.innerHTML = html;
+    const back = screen.querySelector("[data-back]");
+    if(back) back.onclick=()=>{ state.activeCat=null; render(); };
+  }
+
+  function renderExplore(){
+    const mixed = [...state.all].sort((a,b)=> (b.date||"").localeCompare(a.date||""));
+    screen.innerHTML = <div class="muted" style="margin:6px 0 10px">آخرین پست‌ها</div> + cards(mixed,true);
+  }
+
+  function renderSearch(){
+    let html = <input id="q" class="search" placeholder="جستجو در عنوان/کپشن/هشتگ…"
+                value="${esc(state.q)}">;
+    let res = [];
+    if(state.q){
+      const q = state.q.toLowerCase();
+      res = state.all.filter(p => (
+        (p.title||"").toLowerCase().includes(q) ||
+        (p.caption||"").toLowerCase().includes(q) ||
+        (p.tags||[]).join(" ").toLowerCase().includes(q)
+      ));
+      html += <div class="muted" style="margin:8px 2px">${res.length} نتیجه</div>;
+    }else{
+      html += <div class="muted" style="margin:8px 2px">کلیدواژه را بنویسید…</div>;
+    }
+    html += cards(res,true);
+    screen.innerHTML = html;
+    document.getElementById("q").oninput = (e)=>{ state.q = e.target.value; render(); };
+  }
+
+  function renderAbout(){
+    screen.innerHTML = 
+      <div class="hero">
+        <b>درباره ما</b>
+        <p class="muted" style="margin-top:8px">
+          این نسخهٔ آزمایشی پست‌های کانال تلگرام را از طریق Google Apps Script/Sheets می‌خواند
+          و در یک رابط موبایل‌پسند نمایش می‌دهد. هشتگ‌ها دسته‌بندی‌ها را تعیین می‌کنند.
+        </p>
+      </div>;
+  }
+
+  /********* 6) ساخت کارت‌ها + پنجرهٔ کپشن کامل *****/
+  function cards(list){
+    if(!list || !list.length) return <div class="muted" style="margin-top:10px">چیزی برای نمایش نیست.</div>;
+    return <div class="cards"> + list.map(p=>{
+      const tags = (p.tags||[]).map(t=><span class="tagpill">${esc(t)}</span>).join(" ");
+      const date = p.date ? new Date(p.date).toLocaleString('fa-IR') : "";
+      const snip = cut(p.caption||"", 180);
+      const pid = esc(p.id);
+      return 
+        <div class="card" data-open="${pid}">
+          <div class="title">${esc(p.title || "بدون عنوان")}</div>
+          <div class="snippet">${esc(snip)}</div>
+          <div class="row">
+            <span class="muted">${date}</span>
+            <span class="muted">مشاهده کپشن…</span>
+          </div>
+          <div style="margin-top:8px">${tags}</div>
+        </div>
+        <template id="tpl-${pid}">
+          <h3 style="margin:0 0 6px">${esc(p.title||"بدون عنوان")}</h3>
+          <div class="muted" style="margin-bottom:10px">${date}</div>
+          <div style="white-space:pre-wrap;line-height:1.9">${esc(p.caption||"")}</div>
+          <div style="margin-top:10px">${tags}</div>
+          <div class="row" style="margin-top:12px">
+            <span></span>
+            <a class="btn" href="${p.link}" target="_blank" rel="noopener">مشاهده در تلگرام</a>
+          </div>
+        </template>;
+    }).join("") + </div>;
+  }
+
+  // رویداد کلیک کارت‌ها برای باز کردن مودال
+  document.addEventListener("click", (e)=>{
+    const el = e.target.closest("[data-open]");
+    if(!el) return;
+    const id = el.getAttribute("data-open");
+    const tpl = document.getElementById("tpl-"+id);
+    if(!tpl) return;
+    modalBody.innerHTML = tpl.innerHTML;
+    modal.style.display = "flex";
+  });
+
+  /********* 7) ابزارک‌ها *****/
+  function esc(s){return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");}
+  function cut(s,n){return s.length>n? s.slice(0,n)+"…" : s;}
+
+  // تب‌ها
+  document.querySelectorAll(".tabbtn").forEach(b=>{
+    b.onclick = ()=>{ state.tab = b.getAttribute("data-tab"); render(); };
+  });
+
+  // شروع
+  render();
+  fetchItems();
+  </script>
 </body>
 </html>
