@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>شبکه سلامت</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="assets/icon.png" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <img src="assets/icon.png" alt="" class="logo">
+      <div>
+        <h1>شبکه سلامت</h1>
+        <small>نسخه آزمایشی — اتصال به گوگل شیت</small>
+      </div>
+    </div>
+    <button id="refreshBtn" class="ghost" title="بروزرسانی داده‌ها">↻</button>
+  </header>
+
+  <main id="view-container">
+    <!-- Tabs content goes here -->
+  </main>
+
+  <nav class="tabbar">
+    <button class="tab active" data-view="home">خانه</button>
+    <button class="tab" data-view="explore">اکسپلور</button>
+    <button class="tab" data-view="search">جستجو</button>
+    <button class="tab" data-view="about">درباره ما</button>
+  </nav>
+
+  <!-- Templates -->
+  <template id="home-tpl">
+    <section class="section">
+      <h2>دسته‌بندی‌ها</h2>
+      <div id="catChips" class="chips"></div>
+    </section>
+
+    <section class="section">
+      <h2 id="homeCatTitle">آخرین پست‌ها</h2>
+      <div id="homeList" class="card-list"></div>
+    </section>
+  </template>
+
+  <template id="explore-tpl">
+    <section class="section">
+      <h2>اکسپلور</h2>
+      <div id="grid" class="grid"></div>
+    </section>
+  </template>
+
+  <template id="search-tpl">
+    <section class="section">
+      <h2>جستجو</h2>
+      <div class="searchbar">
+        <input id="q" type="text" placeholder="جستجو در عنوان، کپشن یا هشتگ…" />
+        <button id="btnGo">جستجو</button>
+      </div>
+      <div id="searchList" class="card-list"></div>
+    </section>
+  </template>
+
+  <template id="about-tpl">
+    <section class="section">
+      <h2>درباره</h2>
+      <p>این وب‌اپ ساده، پست‌ها را از یک <b>Google Sheet</b> منتشرشده می‌خواند و مثل یک گالری
+         نمایش می‌دهد. برای افزودن پست‌های جدید از <b>Google Forms</b> استفاده کنید.</p>
+      <ul class="bullets">
+        <li>برای نمایش عکس در کارت‌ها، ستون <code>media</code> باید لینک عمومی (jpg/png/mp4) باشد.</li>
+        <li>هشتگ‌ها را با <code>#</code> بنویسید: <code>#سلامت_روان #تغذیه</code></li>
+        <li>برای ویدیو/فایل خصوصی، کلید «مشاهده» کاربر را به لینک همان پست هدایت می‌کند.</li>
+      </ul>
+      <div class="note">
+        اگر چیزی نمی‌بینید، آدرس شیت را در فایل <code>app.js</code> مقداردهی و شیت را
+        از مسیر <b>File → Share → Publish to web</b> به‌صورت CSV منتشر کنید.
+      </div>
+    </section>
+  </template>
+
+  <template id="card-tpl">
+    <article class="card">
+      <div class="media-wrap"></div>
+      <div class="card-body">
+        <div class="meta">
+          <span class="cat"></span>
+          <time></time>
+        </div>
+        <h3 class="title"></h3>
+        <p class="caption line-clamp"></p>
+        <div class="tags"></div>
+        <div class="actions">
+          <a class="btn primary view" target="_blank" rel="noopener">مشاهده</a>
+          <button class="btn ghost more">نمایش کپشن</button>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
