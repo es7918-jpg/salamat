@@ -1,147 +1,289 @@
-<!DOCTYPE html>
+
+<!doctype html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>شبکه سلامت</title>
-  <style>
-    body {
-      font-family: Tahoma, Arial, sans-serif;
-      background: #fdfdfd;
-      color: #111;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: linear-gradient(90deg, #0ea5e9, #06b6d4);
-      color: #fff;
-      padding: 16px;
-      text-align: center;
-      font-size: 20px;
-      font-weight: bold;
-    }
-    nav {
-      display: flex;
-      justify-content: space-around;
-      background: #fff;
-      border-top: 1px solid #ddd;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-    }
-    nav button {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      background: #f1f5f9;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    nav button.active {
-      background: #0ea5e9;
-      color: #fff;
-    }
-    main {
-      padding: 16px;
-      padding-bottom: 80px;
-    }
-    .card {
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      margin-bottom: 16px;
-      overflow: hidden;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    }
-    .card img {
-      width: 100%;
-      display: block;
-      max-height: 240px;
-      object-fit: cover;
-    }
-    .card h3 {
-      margin: 8px 12px;
-      font-size: 16px;
-      color: #111;
-    }
-    .card p {
-      margin: 0 12px 12px;
-      color: #444;
-      font-size: 14px;
-      line-height: 1.6;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>شبکه سلامت</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f172a;
+    --card:#0b1324;
+    --muted:#94a3b8;
+    --text:#e2e8f0;
+    --brand:#0ea5e9;
+    --brand2:#22c55e;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:'Vazirmatn',system-ui,Segoe UI,Roboto;
+    background:#0b1220;
+    color:var(--text);
+  }
+  header{
+    background:linear-gradient(90deg,var(--brand),#38bdf8);
+    color:#fff;
+    padding:18px 16px 24px;
+    position:sticky;top:0;z-index:10;
+    border-bottom-left-radius:18px;border-bottom-right-radius:18px;
+    box-shadow:0 6px 20px rgba(14,165,233,.25);
+  }
+  .brand{display:flex;align-items:center;gap:10px;justify-content:center}
+  .brand .logo{
+    width:36px;height:36px;border-radius:10px;
+    background:#fff; display:grid; place-items:center; color:#16a34a;
+    box-shadow:0 6px 14px rgba(0,0,0,.2);
+    font-size:20px;
+  }
+  main{padding:16px; padding-bottom:96px; max-width:950px; margin:0 auto;}
+  .tabs{display:flex;gap:10px;margin:12px 0 18px}
+  .tab{
+    background:#0e162b;border:1px solid #13203f;color:#dbeafe;
+    padding:10px 14px;border-radius:12px;font-weight:600;cursor:pointer;
+  }
+  .tab.active{background:var(--brand);color:#00243a;border-color:transparent}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  @media(min-width:600px){ .grid{grid-template-columns:repeat(3,1fr)} }
+  @media(min-width:900px){ .grid{grid-template-columns:repeat(4,1fr)} }
+  .card{
+    background:#0c152b;border:1px solid #13203f;border-radius:14px;overflow:hidden;
+    display:flex;flex-direction:column;min-height:210px;
+    transition:transform .15s ease, box-shadow .2s ease; cursor:pointer;
+  }
+  .card:active{transform:scale(.98)}
+  .thumb{width:100%;aspect-ratio:1/1;object-fit:cover;background:#0a1226}
+  .meta{padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+  .title{font-size:14px;line-height:1.4;font-weight:700; display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical; overflow:hidden;}
+  .tags{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{background:#0a1530;border:1px dashed #1e40af;color:#93c5fd;padding:4px 8px;border-radius:999px;font-size:11px}
+  .skel{height:18px;border-radius:999px;background:linear-gradient(90deg,#0d1833,#0e203f,#0d1833);
+    background-size:200% 100%; animation:sh 1.2s infinite linear}
+  .skel.wrap{height:140px;border-radius:14px}
+  @keyframes sh{0%{background-position:0 0}100%{background-position:-200% 0}}
+  .empty{padding:24px;color:var(--muted);text-align:center}
+  dialog{
+    width:min(680px,92vw); border:none;border-radius:18px;background:#0b142a;color:var(--text);
+    box-shadow:0 25px 60px rgba(2,8,23,.6); padding:0; overflow:hidden;
+  }
+  .dlg-head{padding:12px 16px;background:#0a1a33;border-bottom:1px solid #152549;display:flex;justify-content:space-between;align-items:center}
+  .dlg-body{padding:12px}
+  .dlg-img{width:100%;border-bottom:1px solid #13203f; background:#0a1226; object-fit:contain; max-height:55vh}
+  .close{all:unset;cursor:pointer;color:#60a5fa}
+  nav{
+    position:fixed;bottom:10px;left:0;right:0;display:flex;gap:8px;justify-content:space-around;
+    max-width:950px;margin:0 auto; padding:0 12px;
+  }
+  .nav-btn{
+    flex:1;background:#e2e8f0;color:#0b1220;border:none;border-radius:16px;padding:12px 10px;font-weight:700
+  }
+  .nav-btn.active{background:linear-gradient(90deg,var(--brand),#38bdf8); color:#052333}
+  .topbar{display:flex;align-items:center;gap:10px;justify-content:center}
+  .subtitle{opacity:.8;font-size:12px;text-align:center;margin-top:6px}
+  .error{background:#fee2e2;border:1px solid #fca5a5;color:#7f1d1d;padding:10px;border-radius:12px;margin:10px 0}
+</style>
 </head>
 <body>
-  <header>🌿 شبکه سلامت</header>
-  <main id="app">در حال بارگذاری...</main>
+  <header>
+    <div class="topbar">
+      <div class="logo">🌿</div>
+      <h1 style="margin:0;font-size:20px">شبکه سلامت</h1>
+    </div>
+    <div class="subtitle">اکسپلور</div>
+  </header>
+
+  <main>
+    <div id="msg"></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="grid" class="grid"></div>
+    <div id="empty" class="empty" style="display:none">موردی پیدا نشد.</div>
+  </main>
+
   <nav>
-    <button data-tab="home" class="active">خانه</button>
-    <button data-tab="explore">اکسپلور</button>
-    <button data-tab="search">جستجو</button>
-    <button data-tab="about">درباره ما</button>
+    <button class="nav-btn" onclick="switchTab('home')">خانه</button>
+    <button class="nav-btn" onclick="switchTab('search')">جستجو</button>
+    <button class="nav-btn active" onclick="switchTab('explore')">اکسپلور</button>
+    <button class="nav-btn" onclick="switchTab('about')">درباره ما</button>
   </nav>
 
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script>
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTc7k92da7KUDX60NbFQgsejpE5T7f2YS0My2p_E3RsXn2vM12PPqYTYaEm27mQLiEYLJkliLYMg3vS/pub?gid=1204797401&single=true&output=csv";
-    const app = document.getElementById('app');
-    let posts = [];
-    let currentTab = "home";
+<script>
+  const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTc7k92da7KUDX60NbFQgsejpE5T7f2YS0My2p_E3RsXn2vM12PPqYTYaEm27mQLiEYLJkliLYMg3vS/pub?gid=1204797401&single=true&output=csv";
 
-    function render() {
-      if(currentTab === "about") {
-        app.innerHTML = "<h2>درباره ما</h2><p>این یک نسخه آزمایشی از اپ سلامت است. پست‌ها از Google Sheets بارگذاری می‌شوند.</p>";
-        return;
+  const headerCandidates = {
+    image: ['image','img','media','link','photo','file','عکس','عکس/ویدئو','ویدئو','تصویر','لینک تصویر','عکس ویدئو','آپلود تصویر/ویدئو'],
+    title: ['title','subject','عنوان','تیتر','عنوان پست'],
+    caption: ['caption','description','توضیحات','کپشن','کپشن/توضیحات'],
+    tags: ['tags','tag','hashtag','برچسب','برچسب ها','هشتگ‌ها','هشتگ'],
+    category: ['category','cat','دسته','دسته بندی','گروه']
+  };
+
+  const state = { posts: [], cats: [], activeCat: 'همه' };
+
+  const grid = document.getElementById('grid');
+  const tabs = document.getElementById('tabs');
+  const msg = document.getElementById('msg');
+  const empty = document.getElementById('empty');
+
+  // skeletons
+  grid.innerHTML = Array.from({length:6}).map(()=>`
+    <div class="card">
+      <div class="skel wrap"></div>
+      <div class="meta">
+        <div class="skel" style="width:80%"></div>
+        <div class="skel" style="width:40%"></div>
+      </div>
+    </div>
+  `).join("");
+
+  // ---------- Utils
+  function parseCSV(text){
+    const rows = []; let cur = []; let s = ''; let q = false;
+    for(let i=0;i<text.length;i++){
+      const c = text[i], n = text[i+1];
+      if(c === '"'){ if(q && n === '"'){ s += '"'; i++; } else { q = !q; } continue; }
+      if(!q && (c === ',')){ cur.push(s); s=''; continue; }
+      if(!q && (c === '
+' || c === '')){
+        if(s !== '' || cur.length){ cur.push(s); rows.push(cur); cur=[]; s=''; }
+        continue;
       }
-      if(currentTab === "search") {
-        app.innerHTML = '<input id="searchBox" placeholder="جستجو..." style="width:100%;padding:10px;margin-bottom:12px;border:1px solid #ccc;border-radius:8px;" />';
-        const box = document.getElementById("searchBox");
-        box.oninput = () => {
-          const q = box.value.toLowerCase();
-          const filtered = posts.filter(p => (p.caption || "").toLowerCase().includes(q) || (p.title || "").toLowerCase().includes(q));
-          app.innerHTML = box.outerHTML + filtered.map(renderCard).join("");
-          document.getElementById("searchBox").oninput = box.oninput;
-        };
-        return;
-      }
-      // home + explore
-      let list = posts;
-      if(currentTab === "home") {
-        list = posts.filter(p => (p.tags || "").includes("#سلامت"));
-      }
-      app.innerHTML = list.map(renderCard).join("");
+      s += c;
     }
+    if(s!=='' || cur.length){ cur.push(s); rows.push(cur); }
+    return rows.filter(r => r.some(x=>String(x).trim()!==''));
+  }
 
-    function renderCard(p) {
-      return `<div class="card">
-        ${p.image ? `<img src="${p.image}" alt="">` : ""}
-        <h3>${p.title || ""}</h3>
-        <p>${p.caption || ""}</p>
+  function findIndex(headers, keys){
+    const norm = s => String(s||'').toLowerCase().trim();
+    for(let i=0;i<headers.length;i++){
+      const h = norm(headers[i]);
+      if(keys.some(k => h.includes(norm(k)))) return i;
+    }
+    return -1;
+  }
+
+  function drivePreviewToDirect(url){
+    if(!url) return '';
+    // If it's already uc?export=view or .../thumbnail?... keep it
+    if(/googleusercontent|uc\?export|thumbnail/.test(url)) return url;
+    // Try extract id=XYZ or /d/XYZ/
+    const m = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]{10,})/);
+    if(m){ return `https://drive.google.com/uc?export=view&id=${m[1]}`; }
+    return url;
+  }
+
+  function render(){
+    const data = state.activeCat==='همه' ? state.posts : state.posts.filter(p=> (p.category||'همه')===state.activeCat);
+    if(!data.length){ empty.style.display='block'; grid.innerHTML=''; return; }
+    empty.style.display='none';
+    grid.innerHTML = data.map(p=>`
+      <div class="card" onclick='openPost(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
+        <img class="thumb" loading="lazy" src="${p.image||''}" alt="img" onerror="this.src='https://dummyimage.com/600x600/0b1220/1f2937&text=%20'">
+        <div class="meta">
+          <div class="title">${escapeHtml(p.title||'بدون عنوان')}</div>
+          <div class="tags">
+            ${(p.tags||[]).slice(0,3).map(t=>`<span class="chip">#${escapeHtml(t)}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+
+  function buildTabs(){
+    const cats = ['همه', ...state.cats];
+    tabs.innerHTML = cats.map(c=>`<button class="tab ${c===state.activeCat?'active':''}" onclick="setCat('${c}')">${c}</button>`).join('');
+  }
+  window.setCat = function(c){ state.activeCat = c; buildTabs(); render(); }
+
+  window.openPost = function(p){
+    const dlg = document.createElement('dialog');
+    dlg.innerHTML = `
+      <div class='dlg-head'>
+        <strong>${escapeHtml(p.title||'بدون عنوان')}</strong>
+        <button class='close' onclick='this.closest("dialog").close();this.closest("dialog").remove()'>بستن ✕</button>
+      </div>
+      <img class='dlg-img' src='${p.image||""}' onerror="this.style.display='none'">
+      <div class='dlg-body'>
+        <div style="opacity:.8;margin-bottom:8px">${(p.tags||[]).map(t=>`<span class="chip">#${escapeHtml(t)}</span>`).join(' ')}</div>
+        <div style="line-height:1.9">${escapeHtml(p.caption||'')}</div>
+        ${p.link?`<div style="margin-top:10px"><a href="${p.link}" target="_blank" rel="noopener" style="color:#60a5fa">مشاهده منبع ↗</a></div>`:''}
       </div>`;
-    }
+    document.body.appendChild(dlg); dlg.showModal();
+  }
 
-    function setTab(tab) {
-      currentTab = tab;
-      document.querySelectorAll("nav button").forEach(btn => {
-        btn.classList.toggle("active", btn.getAttribute("data-tab") === tab);
-      });
-      render();
-    }
+  window.switchTab = function(name){
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    const map = {home:0,search:1,explore:2,about:3};
+    document.querySelectorAll('.nav-btn')[map[name]].classList.add('active');
+    // For this single-file demo, tabs are visual only; content stays explore.
+  }
 
-    Papa.parse(CSV_URL, {
-      download: true,
-      header: true,
-      complete: function(res) {
-        posts = res.data;
-        render();
+  async function boot(){
+    try{
+      const res = await fetch(CSV_URL, {cache:'no-store'});
+      if(!res.ok) throw new Error('CSV fetch failed: ' + res.status);
+      const txt = await res.text();
+      const rows = parseCSV(txt);
+      if(!rows.length) throw new Error('CSV empty');
+
+      const headers = rows[0];
+      const body = rows.slice(1);
+
+      // Map columns (tolerant to Persian headers)
+      const idx = {
+        image: findIndex(headers, headerCandidates.image),
+        title: findIndex(headers, headerCandidates.title),
+        caption: findIndex(headers, headerCandidates.caption),
+        tags: findIndex(headers, headerCandidates.tags),
+        category: findIndex(headers, headerCandidates.category)
+      };
+
+      // If there is any column named "Column 2" (Google forms helper) fallback as image
+      if(idx.image===-1){
+        const i2 = headers.findIndex(h => String(h).toLowerCase().includes('column 2'));
+        if(i2>-1) idx.image = i2;
       }
-    });
 
-    document.querySelectorAll("nav button").forEach(btn => {
-      btn.onclick = () => setTab(btn.getAttribute("data-tab"));
-    });
-  </script>
+      // Build posts
+      const posts = body.map(r => {
+        const imgRaw = idx.image>-1 ? r[idx.image] : '';
+        const obj = {
+          image: drivePreviewToDirect(imgRaw),
+          title: idx.title>-1 ? r[idx.title] : '',
+          caption: idx.caption>-1 ? r[idx.caption] : '',
+          tags: idx.tags>-1 ? String(r[idx.tags]||'').split(/[#,،\s]+/).filter(Boolean) : [],
+          category: idx.category>-1 ? r[idx.category] : 'متفرقه',
+          link: '' // optional
+        };
+        // If caption seems to contain tags (like "#سلامت #روان") and tags empty, extract
+        if(!obj.tags.length && /#\w/.test(obj.caption||'')){
+          obj.tags = (obj.caption.match(/#([\u0600-\u06FF\w_]+)/g)||[]).map(s=>s.replace('#',''));
+        }
+        return obj;
+      }).filter(p => (p.image||p.title||p.caption));
+
+      state.posts = posts;
+      // Collect cats
+      const set = new Set(posts.map(p=>p.category||'متفرقه'));
+      state.cats = Array.from(set);
+      buildTabs();
+      render();
+
+      if(!posts.length){
+        msg.innerHTML = `<div class="error">هیچ ردیفی از CSV استخراج نشد. هدرها باید یکی از این‌ها باشند: <b>عکس/ویدئو</b>، <b>عنوان پست</b>، <b>کپشن/توضیحات</b>، <b>برچسب‌ها</b>، <b>دسته بندی</b>. همچنین لینک‌های تصویر باید عمومی و از نوع Google Drive Preview یا Direct باشند.</div>`;
+      }
+    }catch(err){
+      console.error(err);
+      msg.innerHTML = `<div class="error">خطا در بارگذاری داده‌ها: ${escapeHtml(err.message)}</div>`;
+      grid.innerHTML='';
+    }
+  }
+  boot();
+</script>
 </body>
 </html>
