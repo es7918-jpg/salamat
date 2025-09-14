@@ -1,95 +1,147 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>شبکه سلامت</title>
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="icon" href="assets/icon.png" />
+  <style>
+    body {
+      font-family: Tahoma, Arial, sans-serif;
+      background: #fdfdfd;
+      color: #111;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: linear-gradient(90deg, #0ea5e9, #06b6d4);
+      color: #fff;
+      padding: 16px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    nav {
+      display: flex;
+      justify-content: space-around;
+      background: #fff;
+      border-top: 1px solid #ddd;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+    nav button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: #f1f5f9;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    nav button.active {
+      background: #0ea5e9;
+      color: #fff;
+    }
+    main {
+      padding: 16px;
+      padding-bottom: 80px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    .card img {
+      width: 100%;
+      display: block;
+      max-height: 240px;
+      object-fit: cover;
+    }
+    .card h3 {
+      margin: 8px 12px;
+      font-size: 16px;
+      color: #111;
+    }
+    .card p {
+      margin: 0 12px 12px;
+      color: #444;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+  </style>
 </head>
 <body>
-  <header class="app-header">
-    <div class="brand">
-      <img src="assets/icon.png" alt="" class="logo">
-      <div>
-        <h1>شبکه سلامت</h1>
-        <small>نسخه آزمایشی — اتصال به Google Sheet (CSV)</small>
-      </div>
-    </div>
-    <button id="refreshBtn" class="ghost" title="بروزرسانی داده‌ها">↻</button>
-  </header>
-
-  <main id="view-container"></main>
-
-  <nav class="tabbar">
-    <button class="tab active" data-view="home">خانه</button>
-    <button class="tab" data-view="explore">اکسپلور</button>
-    <button class="tab" data-view="search">جستجو</button>
-    <button class="tab" data-view="about">درباره ما</button>
+  <header>🌿 شبکه سلامت</header>
+  <main id="app">در حال بارگذاری...</main>
+  <nav>
+    <button data-tab="home" class="active">خانه</button>
+    <button data-tab="explore">اکسپلور</button>
+    <button data-tab="search">جستجو</button>
+    <button data-tab="about">درباره ما</button>
   </nav>
 
-  <!-- Templates -->
-  <template id="home-tpl">
-    <section class="section">
-      <h2>دسته‌بندی‌ها</h2>
-      <div id="catChips" class="chips"></div>
-    </section>
-    <section class="section">
-      <h2 id="homeCatTitle">آخرین پست‌ها</h2>
-      <div id="homeList" class="card-list"></div>
-    </section>
-  </template>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script>
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTc7k92da7KUDX60NbFQgsejpE5T7f2YS0My2p_E3RsXn2vM12PPqYTYaEm27mQLiEYLJkliLYMg3vS/pub?gid=1204797401&single=true&output=csv";
+    const app = document.getElementById('app');
+    let posts = [];
+    let currentTab = "home";
 
-  <template id="explore-tpl">
-    <section class="section">
-      <h2>اکسپلور</h2>
-      <div id="grid" class="grid"></div>
-    </section>
-  </template>
+    function render() {
+      if(currentTab === "about") {
+        app.innerHTML = "<h2>درباره ما</h2><p>این یک نسخه آزمایشی از اپ سلامت است. پست‌ها از Google Sheets بارگذاری می‌شوند.</p>";
+        return;
+      }
+      if(currentTab === "search") {
+        app.innerHTML = '<input id="searchBox" placeholder="جستجو..." style="width:100%;padding:10px;margin-bottom:12px;border:1px solid #ccc;border-radius:8px;" />';
+        const box = document.getElementById("searchBox");
+        box.oninput = () => {
+          const q = box.value.toLowerCase();
+          const filtered = posts.filter(p => (p.caption || "").toLowerCase().includes(q) || (p.title || "").toLowerCase().includes(q));
+          app.innerHTML = box.outerHTML + filtered.map(renderCard).join("");
+          document.getElementById("searchBox").oninput = box.oninput;
+        };
+        return;
+      }
+      // home + explore
+      let list = posts;
+      if(currentTab === "home") {
+        list = posts.filter(p => (p.tags || "").includes("#سلامت"));
+      }
+      app.innerHTML = list.map(renderCard).join("");
+    }
 
-  <template id="search-tpl">
-    <section class="section">
-      <h2>جستجو</h2>
-      <div class="searchbar">
-        <input id="q" type="text" placeholder="جستجو در عنوان، کپشن یا هشتگ…" />
-        <button id="btnGo">جستجو</button>
-      </div>
-      <div id="searchList" class="card-list"></div>
-    </section>
-  </template>
+    function renderCard(p) {
+      return `<div class="card">
+        ${p.image ? `<img src="${p.image}" alt="">` : ""}
+        <h3>${p.title || ""}</h3>
+        <p>${p.caption || ""}</p>
+      </div>`;
+    }
 
-  <template id="about-tpl">
-    <section class="section">
-      <h2>درباره</h2>
-      <p>این وب‌اپ پست‌ها را از Google Sheet (لینک CSV) می‌خواند و به‌صورت گرید (اکسپلور) و کارت (خانه/جستجو) نمایش می‌دهد.</p>
-      <ul class="bullets">
-        <li>ستون‌ها: <code>Timestamp</code>، <code>عنوان/Title/پست</code>، <code>کپشن/Caption</code>، <code>هشتگ‌ها/Tags</code>، <code>لینک/Link</code>، <code>مدیا/Media</code> (اختیاری)</li>
-        <li>برای عکس از لینک عمومی jpg/png/webp و برای ویدئو از mp4 عمومی یا لینک پیش‌نمایش درایو استفاده کنید.</li>
-        <li>اگر لینک Google Drive دارید، اسکریپت خودش به لینک مستقیم تبدیل می‌کند.</li>
-      </ul>
-      <div class="note">فراموش نکنید شیت را از مسیر <b>File → Share → Publish to web</b> روی فرمت <b>CSV</b> منتشر کنید.</div>
-    </section>
-  </template>
+    function setTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll("nav button").forEach(btn => {
+        btn.classList.toggle("active", btn.getAttribute("data-tab") === tab);
+      });
+      render();
+    }
 
-  <template id="card-tpl">
-    <article class="card">
-      <div class="media-wrap"></div>
-      <div class="card-body">
-        <div class="meta">
-          <span class="cat"></span>
-          <time></time>
-        </div>
-        <h3 class="title"></h3>
-        <p class="caption line-clamp"></p>
-        <div class="tags"></div>
-        <div class="actions">
-          <a class="btn primary view" target="_blank" rel="noopener">مشاهده</a>
-          <button class="btn ghost more">نمایش کپشن</button>
-        </div>
-      </div>
-    </article>
-  </template>
+    Papa.parse(CSV_URL, {
+      download: true,
+      header: true,
+      complete: function(res) {
+        posts = res.data;
+        render();
+      }
+    });
 
-  <script src="app.js"></script>
+    document.querySelectorAll("nav button").forEach(btn => {
+      btn.onclick = () => setTab(btn.getAttribute("data-tab"));
+    });
+  </script>
 </body>
 </html>
