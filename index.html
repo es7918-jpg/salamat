@@ -1,289 +1,330 @@
-
 <!doctype html>
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>شبکه سلامت</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#0f172a;
-    --card:#0b1324;
-    --muted:#94a3b8;
-    --text:#e2e8f0;
-    --brand:#0ea5e9;
-    --brand2:#22c55e;
+    --panel:#111827;
+    --panel-2:#0b1220;
+    --text:#e5e7eb;
+    --muted:#93a3b8;
+    --brand:#06b6d4;
+    --brand-2:#22c55e;
+    --chip:#1f2937;
+    --danger:#ef4444;
+    --shadow:0 8px 30px rgba(0,0,0,.25);
   }
   *{box-sizing:border-box}
-  body{
-    margin:0;
-    font-family:'Vazirmatn',system-ui,Segoe UI,Roboto;
-    background:#0b1220;
-    color:var(--text);
-  }
+  body{margin:0;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#0b0f19;color:var(--text);}
   header{
-    background:linear-gradient(90deg,var(--brand),#38bdf8);
+    position:sticky;top:0;z-index:5;
+    background:linear-gradient(90deg,#0ea5e9, #22c55e);
     color:#fff;
-    padding:18px 16px 24px;
-    position:sticky;top:0;z-index:10;
-    border-bottom-left-radius:18px;border-bottom-right-radius:18px;
-    box-shadow:0 6px 20px rgba(14,165,233,.25);
+    padding:18px 16px;
+    box-shadow:var(--shadow);
   }
-  .brand{display:flex;align-items:center;gap:10px;justify-content:center}
-  .brand .logo{
-    width:36px;height:36px;border-radius:10px;
-    background:#fff; display:grid; place-items:center; color:#16a34a;
-    box-shadow:0 6px 14px rgba(0,0,0,.2);
-    font-size:20px;
-  }
-  main{padding:16px; padding-bottom:96px; max-width:950px; margin:0 auto;}
-  .tabs{display:flex;gap:10px;margin:12px 0 18px}
-  .tab{
-    background:#0e162b;border:1px solid #13203f;color:#dbeafe;
-    padding:10px 14px;border-radius:12px;font-weight:600;cursor:pointer;
-  }
-  .tab.active{background:var(--brand);color:#00243a;border-color:transparent}
-  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-  @media(min-width:600px){ .grid{grid-template-columns:repeat(3,1fr)} }
-  @media(min-width:900px){ .grid{grid-template-columns:repeat(4,1fr)} }
-  .card{
-    background:#0c152b;border:1px solid #13203f;border-radius:14px;overflow:hidden;
-    display:flex;flex-direction:column;min-height:210px;
-    transition:transform .15s ease, box-shadow .2s ease; cursor:pointer;
-  }
-  .card:active{transform:scale(.98)}
-  .thumb{width:100%;aspect-ratio:1/1;object-fit:cover;background:#0a1226}
-  .meta{padding:10px 12px;display:flex;flex-direction:column;gap:6px}
-  .title{font-size:14px;line-height:1.4;font-weight:700; display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical; overflow:hidden;}
-  .tags{display:flex;flex-wrap:wrap;gap:6px}
-  .chip{background:#0a1530;border:1px dashed #1e40af;color:#93c5fd;padding:4px 8px;border-radius:999px;font-size:11px}
-  .skel{height:18px;border-radius:999px;background:linear-gradient(90deg,#0d1833,#0e203f,#0d1833);
-    background-size:200% 100%; animation:sh 1.2s infinite linear}
-  .skel.wrap{height:140px;border-radius:14px}
-  @keyframes sh{0%{background-position:0 0}100%{background-position:-200% 0}}
-  .empty{padding:24px;color:var(--muted);text-align:center}
-  dialog{
-    width:min(680px,92vw); border:none;border-radius:18px;background:#0b142a;color:var(--text);
-    box-shadow:0 25px 60px rgba(2,8,23,.6); padding:0; overflow:hidden;
-  }
-  .dlg-head{padding:12px 16px;background:#0a1a33;border-bottom:1px solid #152549;display:flex;justify-content:space-between;align-items:center}
-  .dlg-body{padding:12px}
-  .dlg-img{width:100%;border-bottom:1px solid #13203f; background:#0a1226; object-fit:contain; max-height:55vh}
-  .close{all:unset;cursor:pointer;color:#60a5fa}
-  nav{
-    position:fixed;bottom:10px;left:0;right:0;display:flex;gap:8px;justify-content:space-around;
-    max-width:950px;margin:0 auto; padding:0 12px;
-  }
-  .nav-btn{
-    flex:1;background:#e2e8f0;color:#0b1220;border:none;border-radius:16px;padding:12px 10px;font-weight:700
-  }
-  .nav-btn.active{background:linear-gradient(90deg,var(--brand),#38bdf8); color:#052333}
-  .topbar{display:flex;align-items:center;gap:10px;justify-content:center}
-  .subtitle{opacity:.8;font-size:12px;text-align:center;margin-top:6px}
-  .error{background:#fee2e2;border:1px solid #fca5a5;color:#7f1d1d;padding:10px;border-radius:12px;margin:10px 0}
+  h1{margin:0;font-size:22px;display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.2px}
+  h1 .logo{display:inline-grid;place-items:center;width:28px;height:28px;background:#fff2;border-radius:10px}
+  .container{max-width:980px;margin:12px auto;padding:0 12px}
+  .tabs{position:sticky;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;background:#0b0f19; padding:12px; border-top:1px solid #1f2937}
+  .tab{appearance:none;border:none;border-radius:14px;padding:12px 8px;color:#cbd5e1;background:#0b192a; font-weight:700}
+  .tab.active{background:linear-gradient(90deg,#0284c7,#06b6d4);color:#001827}
+  .hidden{display:none}
+  /* skeleton */
+  .skeleton{height:12px;background:linear-gradient(90deg,#172033 25%,#1c2540 37%,#172033 63%);background-size:400% 100%;animation:shimmer 1.3s infinite; border-radius:999px}
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0}}
+  /* grid */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  @media (max-width:680px){ .grid{grid-template-columns:repeat(2,1fr)} }
+  .card{position:relative;overflow:hidden;border-radius:14px;background:#101826; box-shadow:var(--shadow);}
+  .card img{display:block;width:100%;height:160px;object-fit:cover;background:#0b1220}
+  .chip{position:absolute;top:8px;right:8px;background:#0009;color:#fff;font-size:12px;padding:6px 8px;border-radius:999px}
+  .card .title{padding:10px;font-weight:700;font-size:14px;line-height:1.4;color:#e2e8f0}
+  .card .meta{padding:0 10px 12px;font-size:12px;color:#9fb3c8}
+  /* filters */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}
+  .pill{background:#0c1627;border:1px solid #1f2940;color:#bcd0e8;padding:6px 10px;border-radius:999px;font-size:12px;cursor:pointer}
+  .pill.active{background:#0ea5e9;color:#04111b;border-color:transparent}
+  /* search */
+  .search{display:flex;gap:8px;margin:8px 0 16px}
+  .search input{flex:1;background:#0b1220;border:1px solid #1e293b;color:#dbeafe;padding:10px 12px;border-radius:12px}
+  .search button{background:#0ea5e9;border:none;color:#002133;padding:10px 14px;border-radius:12px;font-weight:800}
+  /* empty / error */
+  .empty,.error{padding:16px;border-radius:12px;background:#0b1220;border:1px dashed #334155;color:#9fb3c8}
+  .error{border-color:#7f1d1d;color:#fecaca}
+  /* modal */
+  dialog{border:0;border-radius:14px;background:#0b1220;color:#e5e7eb;max-width:640px;width:92vw}
+  dialog::backdrop{background:rgba(0,0,0,.6)}
+  .modal-img{width:100%;max-height:50vh;object-fit:cover;border-radius:10px}
+  .modal-title{font-size:18px;margin:10px 0 6px}
+  .modal-caption{white-space:pre-wrap;color:#c7d2fe}
+  .close{margin-top:10px;background:#111827;border:1px solid #334155;border-radius:12px;padding:10px 14px;color:#cbd5e1}
 </style>
 </head>
 <body>
-  <header>
-    <div class="topbar">
-      <div class="logo">🌿</div>
-      <h1 style="margin:0;font-size:20px">شبکه سلامت</h1>
+<header>
+  <div class="container">
+    <h1>
+      <span class="logo">🌿</span>
+      شبکه سلامت
+    </h1>
+    <div id="status" style="margin-top:6px;font-size:12px;opacity:.9"></div>
+  </div>
+</header>
+
+<main class="container">
+  <!-- HOME -->
+  <section id="home">
+    <div class="filters" id="homeFilters"></div>
+    <div id="homeList" class="grid"></div>
+  </section>
+
+  <!-- EXPLORE -->
+  <section id="explore" class="hidden">
+    <div class="filters" id="catFilters"></div>
+    <div class="grid" id="exploreGrid"></div>
+    <div id="exploreEmpty" class="empty hidden">پستی یافت نشد.</div>
+  </section>
+
+  <!-- SEARCH -->
+  <section id="search" class="hidden">
+    <div class="search">
+      <input id="q" placeholder="جستجو در عنوان، کپشن و هشتگ‌ها…">
+      <button id="btnSearch">جستجو</button>
     </div>
-    <div class="subtitle">اکسپلور</div>
-  </header>
+    <div class="grid" id="searchGrid"></div>
+    <div id="searchEmpty" class="empty hidden">نتیجه‌ای پیدا نشد.</div>
+  </section>
 
-  <main>
-    <div id="msg"></div>
-    <div class="tabs" id="tabs"></div>
-    <div id="grid" class="grid"></div>
-    <div id="empty" class="empty" style="display:none">موردی پیدا نشد.</div>
-  </main>
+  <!-- ABOUT -->
+  <section id="about" class="hidden">
+    <div class="empty">
+      <b>درباره ما</b><br>
+      این نسخه‌ی آزمایشی با اتصال مستقیم به Google Sheet (CSV) ساخته شده. تصاویر از Google Drive به‌صورت مستقیم لود می‌شوند.
+    </div>
+  </section>
+</main>
 
-  <nav>
-    <button class="nav-btn" onclick="switchTab('home')">خانه</button>
-    <button class="nav-btn" onclick="switchTab('search')">جستجو</button>
-    <button class="nav-btn active" onclick="switchTab('explore')">اکسپلور</button>
-    <button class="nav-btn" onclick="switchTab('about')">درباره ما</button>
-  </nav>
+<!-- NAV -->
+<nav class="tabs">
+  <button class="tab" data-route="home">خانه</button>
+  <button class="tab active" data-route="explore">اکسپلور</button>
+  <button class="tab" data-route="search">جستجو</button>
+  <button class="tab" data-route="about">درباره ما</button>
+</nav>
+
+<!-- MODAL -->
+<dialog id="viewer">
+  <img class="modal-img" id="viewerImg" alt="">
+  <div class="modal-title" id="viewerTitle"></div>
+  <div class="modal-caption" id="viewerCap"></div>
+  <button class="close" id="viewerClose">بستن</button>
+</dialog>
 
 <script>
-  const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTc7k92da7KUDX60NbFQgsejpE5T7f2YS0My2p_E3RsXn2vM12PPqYTYaEm27mQLiEYLJkliLYMg3vS/pub?gid=1204797401&single=true&output=csv";
+const CONFIG = {
+  CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTc7k92da7KUDX60NbFQgsejpE5T7f2YS0My2p_E3RsXn2vM12PPqYTYaEm27mQLiEYLJkliLYMg3vS/pub?gid=1204797401&single=true&output=csv",
+};
 
-  const headerCandidates = {
-    image: ['image','img','media','link','photo','file','عکس','عکس/ویدئو','ویدئو','تصویر','لینک تصویر','عکس ویدئو','آپلود تصویر/ویدئو'],
-    title: ['title','subject','عنوان','تیتر','عنوان پست'],
-    caption: ['caption','description','توضیحات','کپشن','کپشن/توضیحات'],
-    tags: ['tags','tag','hashtag','برچسب','برچسب ها','هشتگ‌ها','هشتگ'],
-    category: ['category','cat','دسته','دسته بندی','گروه']
+const $ = s=>document.querySelector(s);
+const $$ = s=>Array.from(document.querySelectorAll(s));
+
+const state = { items:[], cats:[], activeCat:"همه", loaded:false };
+
+function setStatus(msg,type="") {
+  const el = $("#status");
+  el.textContent = msg || "";
+  el.style.opacity = msg?1:.0;
+}
+
+function csvToRows(text){
+  // Robust CSV parser (handles quoted commas and newlines)
+  const rows=[]; let row=[], val=""; let q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i], n=text[i+1];
+    if(c==='\"'){
+      if(q && n==='\"'){ val+='\"'; i++; }
+      else q=!q;
+    } else if(c===',' && !q){ row.push(val); val=""; }
+    else if((c==='\n' || c==='\r') && !q){
+      if(val!=="" || row.length){ row.push(val); rows.push(row); row=[]; val=""; }
+      if(c==='\r' && n==='\n') i++; // CRLF
+    } else { val+=c; }
+  }
+  if(val!=="" || row.length){ row.push(val); rows.push(row); }
+  return rows.filter(r=>r.some(c=>String(c).trim()!==''));
+}
+
+function norm(s){ return String(s||"").trim().toLowerCase(); }
+function directDrive(url){
+  if(!url) return "";
+  try{
+    const u=new URL(url);
+    const idMatch = url.match(/[-\w]{25,}/);
+    const id = idMatch? idMatch[0] : (u.searchParams.get("id")||"");
+    if(id) return `https://drive.google.com/uc?export=view&id=${id}`;
+  }catch(e){}
+  return url;
+}
+function detectCols(headers){
+  const map={img:null,title:null,cap:null,tags:null,cat:null,link:null,date:null};
+  headers.forEach((h,i)=>{
+    const x=norm(h);
+    if(/(img|image|عکس|تصویر|ویدئو)/.test(x)) map.img=i;
+    else if(/(title|عنوان)/.test(x)) map.title=i;
+    else if(/(caption|توضیح|کپشن)/.test(x)) map.cap=i;
+    else if(/(tag|هشتگ|برچسب)/.test(x)) map.tags=i;
+    else if(/(دسته|category|گروه)/.test(x)) map.cat=i;
+    else if(/(link|لینک|url)/.test(x)) map.link=i;
+    else if(/(date|تاریخ|زمان)/.test(x)) map.date=i;
+    // fallback: if sheet has "Column 2" from your previous transform, treat as image
+    if(x.includes("column 2") && map.img==null) map.img=i;
+  });
+  return map;
+}
+
+function buildItems(rows){
+  const [headers,...data]=rows;
+  const cols=detectCols(headers);
+  const required = cols.img!=null || cols.title!=null || cols.cap!=null;
+  if(!required){ throw new Error("ستون‌های مورد نیاز پیدا نشدند. لطفاً هدرها را بررسی کنید."); }
+  const items = data.map(r=>{
+    const img = directDrive(r[cols.img]||"");
+    const title = r[cols.title] || "";
+    const cap = r[cols.cap] || "";
+    const tags = String(r[cols.tags]||"").replace(/،/g,',').split(/[#,\s]+/).filter(Boolean);
+    const cat = r[cols.cat] || (tags[0]||"متفرقه");
+    const link = r[cols.link] || "";
+    const date = r[cols.date] || "";
+    return {img,title,cap,tags,cat,link,date};
+  }).filter(it=>it.img || it.title || it.cap);
+  return items;
+}
+
+function cardTemplate(it, idx){
+  const safeTitle = it.title || (it.tags?.[0] ? '#'+it.tags[0] : 'بدون عنوان');
+  return `<article class="card" data-idx="${idx}">
+    <span class="chip">${it.cat||"متفرقه"}</span>
+    <img loading="lazy" src="${it.img||''}" alt="">
+    <div class="title">${safeTitle}</div>
+    <div class="meta">${(it.tags||[]).slice(0,3).map(t=>'#'+t).join(' ')}</div>
+  </article>`;
+}
+
+function renderExplore(){
+  const grid = $("#exploreGrid");
+  const empty = $("#exploreEmpty");
+  const items = state.items.filter(it => state.activeCat==="همه" ? true : (norm(it.cat)===norm(state.activeCat)));
+  grid.innerHTML = items.map((it,i)=>cardTemplate(it,i)).join("");
+  empty.classList.toggle("hidden", items.length>0);
+  grid.onclick = (e)=>{
+    const card = e.target.closest(".card");
+    if(!card) return;
+    const it = items[Number(card.dataset.idx)] || items[0];
+    openModal(it);
   };
+}
+function renderHome(){
+  // Home: 6 آخرین پست‌ها
+  const list = $("#homeList");
+  const items = state.items.slice(0,6);
+  list.innerHTML = items.map((it,i)=>cardTemplate(it,i)).join("");
+  list.onclick = (e)=>{
+    const card = e.target.closest(".card");
+    if(!card) return;
+    const it = items[Number(card.dataset.idx)] || items[0];
+    openModal(it);
+  };
+}
+function renderCatFilters(){
+  const cats = ["همه", ...state.cats];
+  $("#catFilters").innerHTML = cats.map(c=>`<span class="pill ${c===state.activeCat?'active':''}" data-cat="${c}">${c}</span>`).join("");
+  $("#catFilters").onclick = (e)=>{
+    const p = e.target.closest(".pill"); if(!p) return;
+    state.activeCat = p.dataset.cat;
+    renderCatFilters(); renderExplore();
+  };
+}
+function openModal(it){
+  $("#viewerImg").src = it.img || "";
+  $("#viewerTitle").textContent = it.title || "";
+  $("#viewerCap").textContent = it.cap || "";
+  $("#viewer").showModal();
+}
+function closeModal(){ $("#viewer").close(); }
 
-  const state = { posts: [], cats: [], activeCat: 'همه' };
+function routeTo(name){
+  $$(".tab").forEach(b=>b.classList.toggle("active", b.dataset.route===name));
+  ["home","explore","search","about"].forEach(id=>$("#"+id).classList.toggle("hidden", id!==name));
+  location.hash = name;
+}
+function bindNav(){
+  $$(".tab").forEach(b=> b.onclick = ()=> routeTo(b.dataset.route) );
+  $("#viewerClose").onclick = closeModal;
+  window.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
+  window.addEventListener("hashchange",()=>{
+    const h=location.hash.replace("#","")||"explore";
+    routeTo(h);
+  });
+}
 
-  const grid = document.getElementById('grid');
-  const tabs = document.getElementById('tabs');
-  const msg = document.getElementById('msg');
-  const empty = document.getElementById('empty');
+async function loadCSV(){
+  setStatus("در حال بارگذاری داده‌ها…");
+  const res = await fetch(CONFIG.CSV_URL, {cache:"no-store"});
+  if(!res.ok) throw new Error("دسترسی به CSV برقرار نشد.");
+  const text = await res.text();
+  const rows = csvToRows(text);
+  const items = buildItems(rows);
+  state.items = items;
+  state.cats = Array.from(new Set(items.map(it=>it.cat).filter(Boolean)));
+  state.loaded = true;
+  setStatus(`تعداد پست‌ها: ${items.length}`);
+  // render
+  renderCatFilters();
+  renderExplore();
+  renderHome();
+}
 
-  // skeletons
-  grid.innerHTML = Array.from({length:6}).map(()=>`
-    <div class="card">
-      <div class="skel wrap"></div>
-      <div class="meta">
-        <div class="skel" style="width:80%"></div>
-        <div class="skel" style="width:40%"></div>
-      </div>
-    </div>
-  `).join("");
+function doSearch(){
+  const q = norm($("#q").value);
+  const grid = $("#searchGrid");
+  const empty = $("#searchEmpty");
+  const items = state.items.filter(it=>{
+    const hay=[it.title,it.cap, ...(it.tags||[])].join(" ").toLowerCase();
+    return hay.includes(q);
+  });
+  grid.innerHTML = items.map((it,i)=>cardTemplate(it,i)).join("");
+  empty.classList.toggle("hidden", items.length>0);
+  grid.onclick = (e)=>{
+    const card = e.target.closest(".card");
+    if(!card) return;
+    const it = items[Number(card.dataset.idx)] || items[0];
+    openModal(it);
+  };
+}
 
-  // ---------- Utils
-  function parseCSV(text){
-    const rows = []; let cur = []; let s = ''; let q = false;
-    for(let i=0;i<text.length;i++){
-      const c = text[i], n = text[i+1];
-      if(c === '"'){ if(q && n === '"'){ s += '"'; i++; } else { q = !q; } continue; }
-      if(!q && (c === ',')){ cur.push(s); s=''; continue; }
-      if(!q && (c === '
-' || c === '')){
-        if(s !== '' || cur.length){ cur.push(s); rows.push(cur); cur=[]; s=''; }
-        continue;
-      }
-      s += c;
-    }
-    if(s!=='' || cur.length){ cur.push(s); rows.push(cur); }
-    return rows.filter(r => r.some(x=>String(x).trim()!==''));
-  }
+function init(){
+  bindNav();
+  $("#btnSearch").onclick = doSearch;
+  $("#q").addEventListener("keydown",e=>{ if(e.key==="Enter") doSearch(); });
+  const route = (location.hash||"#explore").replace("#","");
+  routeTo(route);
+  // show quick skeletons
+  $("#exploreGrid").innerHTML = `<div class="skeleton" style="height:160px;border-radius:14px"></div>`.repeat(6);
+  loadCSV().catch(err=>{
+    console.error(err);
+    setStatus("");
+    const box = document.createElement("div");
+    box.className="error";
+    box.innerHTML = "خطا در خواندن داده‌ها: "+ err.message + "<br>لطفاً لینک CSV و دسترسی انتشار را بررسی کنید.";
+    $(".container").prepend(box);
+  });
+}
 
-  function findIndex(headers, keys){
-    const norm = s => String(s||'').toLowerCase().trim();
-    for(let i=0;i<headers.length;i++){
-      const h = norm(headers[i]);
-      if(keys.some(k => h.includes(norm(k)))) return i;
-    }
-    return -1;
-  }
-
-  function drivePreviewToDirect(url){
-    if(!url) return '';
-    // If it's already uc?export=view or .../thumbnail?... keep it
-    if(/googleusercontent|uc\?export|thumbnail/.test(url)) return url;
-    // Try extract id=XYZ or /d/XYZ/
-    const m = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]{10,})/);
-    if(m){ return `https://drive.google.com/uc?export=view&id=${m[1]}`; }
-    return url;
-  }
-
-  function render(){
-    const data = state.activeCat==='همه' ? state.posts : state.posts.filter(p=> (p.category||'همه')===state.activeCat);
-    if(!data.length){ empty.style.display='block'; grid.innerHTML=''; return; }
-    empty.style.display='none';
-    grid.innerHTML = data.map(p=>`
-      <div class="card" onclick='openPost(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
-        <img class="thumb" loading="lazy" src="${p.image||''}" alt="img" onerror="this.src='https://dummyimage.com/600x600/0b1220/1f2937&text=%20'">
-        <div class="meta">
-          <div class="title">${escapeHtml(p.title||'بدون عنوان')}</div>
-          <div class="tags">
-            ${(p.tags||[]).slice(0,3).map(t=>`<span class="chip">#${escapeHtml(t)}</span>`).join('')}
-          </div>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
-
-  function buildTabs(){
-    const cats = ['همه', ...state.cats];
-    tabs.innerHTML = cats.map(c=>`<button class="tab ${c===state.activeCat?'active':''}" onclick="setCat('${c}')">${c}</button>`).join('');
-  }
-  window.setCat = function(c){ state.activeCat = c; buildTabs(); render(); }
-
-  window.openPost = function(p){
-    const dlg = document.createElement('dialog');
-    dlg.innerHTML = `
-      <div class='dlg-head'>
-        <strong>${escapeHtml(p.title||'بدون عنوان')}</strong>
-        <button class='close' onclick='this.closest("dialog").close();this.closest("dialog").remove()'>بستن ✕</button>
-      </div>
-      <img class='dlg-img' src='${p.image||""}' onerror="this.style.display='none'">
-      <div class='dlg-body'>
-        <div style="opacity:.8;margin-bottom:8px">${(p.tags||[]).map(t=>`<span class="chip">#${escapeHtml(t)}</span>`).join(' ')}</div>
-        <div style="line-height:1.9">${escapeHtml(p.caption||'')}</div>
-        ${p.link?`<div style="margin-top:10px"><a href="${p.link}" target="_blank" rel="noopener" style="color:#60a5fa">مشاهده منبع ↗</a></div>`:''}
-      </div>`;
-    document.body.appendChild(dlg); dlg.showModal();
-  }
-
-  window.switchTab = function(name){
-    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-    const map = {home:0,search:1,explore:2,about:3};
-    document.querySelectorAll('.nav-btn')[map[name]].classList.add('active');
-    // For this single-file demo, tabs are visual only; content stays explore.
-  }
-
-  async function boot(){
-    try{
-      const res = await fetch(CSV_URL, {cache:'no-store'});
-      if(!res.ok) throw new Error('CSV fetch failed: ' + res.status);
-      const txt = await res.text();
-      const rows = parseCSV(txt);
-      if(!rows.length) throw new Error('CSV empty');
-
-      const headers = rows[0];
-      const body = rows.slice(1);
-
-      // Map columns (tolerant to Persian headers)
-      const idx = {
-        image: findIndex(headers, headerCandidates.image),
-        title: findIndex(headers, headerCandidates.title),
-        caption: findIndex(headers, headerCandidates.caption),
-        tags: findIndex(headers, headerCandidates.tags),
-        category: findIndex(headers, headerCandidates.category)
-      };
-
-      // If there is any column named "Column 2" (Google forms helper) fallback as image
-      if(idx.image===-1){
-        const i2 = headers.findIndex(h => String(h).toLowerCase().includes('column 2'));
-        if(i2>-1) idx.image = i2;
-      }
-
-      // Build posts
-      const posts = body.map(r => {
-        const imgRaw = idx.image>-1 ? r[idx.image] : '';
-        const obj = {
-          image: drivePreviewToDirect(imgRaw),
-          title: idx.title>-1 ? r[idx.title] : '',
-          caption: idx.caption>-1 ? r[idx.caption] : '',
-          tags: idx.tags>-1 ? String(r[idx.tags]||'').split(/[#,،\s]+/).filter(Boolean) : [],
-          category: idx.category>-1 ? r[idx.category] : 'متفرقه',
-          link: '' // optional
-        };
-        // If caption seems to contain tags (like "#سلامت #روان") and tags empty, extract
-        if(!obj.tags.length && /#\w/.test(obj.caption||'')){
-          obj.tags = (obj.caption.match(/#([\u0600-\u06FF\w_]+)/g)||[]).map(s=>s.replace('#',''));
-        }
-        return obj;
-      }).filter(p => (p.image||p.title||p.caption));
-
-      state.posts = posts;
-      // Collect cats
-      const set = new Set(posts.map(p=>p.category||'متفرقه'));
-      state.cats = Array.from(set);
-      buildTabs();
-      render();
-
-      if(!posts.length){
-        msg.innerHTML = `<div class="error">هیچ ردیفی از CSV استخراج نشد. هدرها باید یکی از این‌ها باشند: <b>عکس/ویدئو</b>، <b>عنوان پست</b>، <b>کپشن/توضیحات</b>، <b>برچسب‌ها</b>، <b>دسته بندی</b>. همچنین لینک‌های تصویر باید عمومی و از نوع Google Drive Preview یا Direct باشند.</div>`;
-      }
-    }catch(err){
-      console.error(err);
-      msg.innerHTML = `<div class="error">خطا در بارگذاری داده‌ها: ${escapeHtml(err.message)}</div>`;
-      grid.innerHTML='';
-    }
-  }
-  boot();
+init();
 </script>
 </body>
 </html>
