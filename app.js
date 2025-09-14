@@ -1,6 +1,6 @@
 // ======== تنظیمات ========
 // 1) فایل Google Sheet خود را Publish to web کنید (CSV) و لینک را اینجا قرار دهید:
-const SHEET_CSV_URL = "PASTE_YOUR_PUBLISHED_CSV_LINK_HERE";
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTc7k92da7KUDX60NbFQgsejpE5T7f2YS0My2p_E3RsXn2vM12PPqYTYaEm27mQLiEYLJkliLYMg3vS/pub?gid=1204797401&single=true&output=csv";
 // مثال لینک CSV: https://docs.google.com/spreadsheets/d/XXXXX/pub?output=csv
 
 // نگاشت هشتگ‌ها به دسته‌ها (برای صفحه خانه)
