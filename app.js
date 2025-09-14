@@ -1,7 +1,7 @@
 // ======== تنظیمات ========
-// 1) فایل Google Sheet خود را Publish to web کنید (CSV) و لینک را اینجا قرار دهید:
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTc7k92da7KUDX60NbFQgsejpE5T7f2YS0My2p_E3RsXn2vM12PPqYTYaEm27mQLiEYLJkliLYMg3vS/pub?gid=1204797401&single=true&output=csv";
-// مثال لینک CSV: https://docs.google.com/spreadsheets/d/XXXXX/pub?output=csv
+// لینک CSVِ "Publish to web" از Google Sheets را اینجا بگذارید:
+const SHEET_CSV_URL = "PASTE_YOUR_PUBLISHED_CSV_LINK_HERE";
+// مثال: https://docs.google.com/spreadsheets/d/XXXXX/pub?output=csv
 
 // نگاشت هشتگ‌ها به دسته‌ها (برای صفحه خانه)
 const CATEGORY_TITLES = {
@@ -12,23 +12,12 @@ const CATEGORY_TITLES = {
   "عمومی": "متفرقه"
 };
 
-// نام ستون‌ها در شیت (هدرها باید دقیقاً یکی از این‌ها باشند)
-const HEADERS = {
-  timestamp: "Timestamp",
-  category: "دسته بندی",
-  title: "عنوان پست",
-  caption: "کپشن/توضیحات",
-  tags: "برچسب‌ها",
-  link: "لینک",
-  media: "آپلود/تصویر/ویدیو"
-};
-
 // ======== ابزارها ========
 const $ = (sel, ctx=document) => ctx.querySelector(sel);
 const $$ = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
 const esc = (s) => (s==null?"":String(s)).replace(/[&<>"]/g,c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
 
-// تبدیل CSV به آرایه‌ای از ابجکت‌ها
+// CSV → Array of objects
 function parseCSV(text){
   const rows = text.replace(/\r/g,"").split("\n").map(r=>r.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/));
   const headers = rows.shift().map(h=>h.trim());
@@ -39,10 +28,42 @@ function parseCSV(text){
   });
 }
 
+// Flexible header finder
+function findKey(obj, patterns){
+  const keys = Object.keys(obj);
+  for(const pat of patterns){
+    const re = new RegExp(pat, "i");
+    const key = keys.find(k => re.test(k));
+    if(key) return key;
+  }
+  return null;
+}
+
+// Convert Google Drive "view" link to direct image link
+function driveDirect(link){
+  if(!link) return null;
+  try{
+    const m = link.match(/\/file\/d\/([^/]+)\//);
+    if(m) return `https://drive.google.com/uc?export=view&id=${m[1]}`;
+    const u = new URL(link);
+    if(u.hostname.includes("drive.google.com") && u.searchParams.get("id")){
+      return `https://drive.google.com/uc?export=view&id=${u.searchParams.get("id")}`;
+    }
+  }catch(e){}
+  return link && link.startsWith("http") ? link : null;
+}
+
+function isImage(url){
+  if(!url) return false;
+  const u = url.toLowerCase();
+  return u.endsWith(".jpg")||u.endsWith(".jpeg")||u.endsWith(".png")||u.endsWith(".webp");
+}
+
 function toTags(s){
   const raw = (s||"").trim();
-  const tags = raw.split(/\s+/).map(t=>t.replace(/^#+/,"")).filter(Boolean);
-  return Array.from(new Set(tags)); // unique
+  const capTags = raw.match(/#[^\s#]+/g) || [];
+  const tags = (raw + " " + capTags.join(" ")).split(/\s+/).map(t=>t.replace(/^#+/,"")).filter(Boolean);
+  return Array.from(new Set(tags));
 }
 
 function firstTagToCat(tags){
@@ -52,28 +73,8 @@ function firstTagToCat(tags){
   return "عمومی";
 }
 
-function mediaElement(url){
-  if(!url) return null;
-  const u = url.toLowerCase();
-  if(u.endsWith(".jpg")||u.endsWith(".jpeg")||u.endsWith(".png")||u.endsWith(".webp")){
-    const img = document.createElement("img");
-    img.loading = "lazy"; img.src = url; img.alt = "";
-    return img;
-  }
-  if(u.endsWith(".mp4")||u.includes("youtube.com")||u.includes("youtu.be")){
-    const v = document.createElement("video");
-    v.src = url; v.controls = true; v.preload="metadata";
-    return v;
-  }
-  return null;
-}
-
 // ======== مدل داده ========
-let STATE = {
-  all: [],    // همه پست‌ها
-  view: "home",
-  activeCat: null
-};
+let STATE = { all:[], view:"home", activeCat:null };
 
 async function loadData(){
   if(!SHEET_CSV_URL || SHEET_CSV_URL.startsWith("PASTE_")){
@@ -85,18 +86,31 @@ async function loadData(){
   const text = await res.text();
   const rows = parseCSV(text);
 
-  // نقشه‌برداری بر اساس هدرها
   STATE.all = rows.map((r,i)=>{
-    const tags = toTags(r[HEADERS.tags]);
+    const keyTime    = findKey(r, ["timestamp","زمان","تاریخ"]);
+    const keyTitle   = findKey(r, ["title","عنوان","پست"]);
+    const keyCap     = findKey(r, ["caption","کپشن","توضیح"]);
+    const keyTags    = findKey(r, ["tags","هشتگ","برچسب"]);
+    const keyLink    = findKey(r, ["link","لینک","پیوند"]);
+    const keyMedia   = findKey(r, ["media","مدیا","تصویر","ویدیو","آپلود","image","video"]);
+
+    const title  = (r[keyTitle]||"").trim();
+    const cap    = (r[keyCap]||"").trim();
+    const tags   = toTags((r[keyTags]||"") + " " + cap);
+    const media0 = (r[keyMedia]||"").trim();
+    const link0  = (r[keyLink]||"").trim();
+
+    // Resolve media for display (prefer direct image)
+    let media = driveDirect(media0) || driveDirect(link0);
     const catKey = firstTagToCat(tags);
 
     return {
       id: i+1,
-      date: r[HEADERS.timestamp] || "",
-      title: r[HEADERS.title] || "",
-      caption: r[HEADERS.caption] || "",
-      link: r[HEADERS.link] || "",
-      media: r[HEADERS.media] || "",
+      date: r[keyTime] || "",
+      title: title || (cap ? cap.slice(0,40)+"…" : "بدون عنوان"),
+      caption: cap,
+      link: link0 || media0,
+      media,
       tags, catKey
     };
   }).reverse();
@@ -105,6 +119,8 @@ async function loadData(){
 }
 
 // ======== رندر نماها ========
+const $tpl = (id)=> document.querySelector(`#${id}`).content.cloneNode(true);
+
 function show(view){ STATE.view = view; render(); }
 function setActiveTab(){
   $$(".tab").forEach(b=> b.classList.toggle("active", b.dataset.view===STATE.view));
@@ -115,7 +131,7 @@ function render(){
   container.innerHTML = "";
 
   if(STATE.view==="home"){
-    const tpl = $("#home-tpl").content.cloneNode(true);
+    const tpl = $tpl("home-tpl");
     const chips = tpl.querySelector("#catChips");
     Object.entries(CATEGORY_TITLES).forEach(([key, title])=>{
       const chip = document.createElement("button");
@@ -124,27 +140,32 @@ function render(){
       chip.onclick = ()=>{ STATE.activeCat = key; render(); };
       chips.appendChild(chip);
     });
+    tpl.querySelector("#homeCatTitle").textContent =
+      STATE.activeCat ? ("آخرین پست‌ها — " + CATEGORY_TITLES[STATE.activeCat]) : "آخرین پست‌ها";
 
     const listEl = tpl.querySelector("#homeList");
-    tpl.querySelector("#homeCatTitle").textContent = STATE.activeCat ? ("آخرین پست‌ها — " + CATEGORY_TITLES[STATE.activeCat]) : "آخرین پست‌ها";
-    renderCards(listEl, STATE.activeCat ? STATE.all.filter(p=>p.catKey===STATE.activeCat) : STATE.all.slice(0,20));
+    const items = STATE.activeCat ? STATE.all.filter(p=>p.catKey===STATE.activeCat) : STATE.all.slice(0,20);
+    renderCards(listEl, items);
     container.appendChild(tpl);
   }
 
   if(STATE.view==="explore"){
-    const tpl = $("#explore-tpl").content.cloneNode(true);
+    const tpl = $tpl("explore-tpl");
     const grid = tpl.querySelector("#grid");
     STATE.all.forEach(p=>{
       const tile = document.createElement("a");
       tile.className = "tile";
       tile.href = p.link || p.media || "#";
       tile.target = "_blank";
-      const m = mediaElement(p.media);
-      if(m && m.tagName==="IMG"){ tile.appendChild(m); }
-      else{
+      if (p.media && isImage(p.media)){
+        const img = document.createElement("img");
+        img.loading="lazy";
+        img.src = p.media;
+        tile.appendChild(img);
+      }else{
         const ph = document.createElement("div");
         ph.style.display="grid"; ph.style.placeItems="center"; ph.style.height="100%";
-        ph.textContent = p.title || "پست";
+        ph.style.color="#93c5fd"; ph.textContent = p.title || "پست";
         tile.appendChild(ph);
       }
       const cap = document.createElement("div"); cap.className="cap"; cap.textContent = p.title || "";
@@ -155,14 +176,13 @@ function render(){
   }
 
   if(STATE.view==="search"){
-    const tpl = $("#search-tpl").content.cloneNode(true);
+    const tpl = $tpl("search-tpl");
     const q = tpl.querySelector("#q");
     const list = tpl.querySelector("#searchList");
     const doSearch = ()=>{
       const s = q.value.trim().toLowerCase();
       const res = !s ? [] : STATE.all.filter(p=>(p.title+p.caption+p.tags.join(" ")).toLowerCase().includes(s));
-      list.innerHTML="";
-      renderCards(list, res);
+      list.innerHTML=""; renderCards(list, res);
     };
     tpl.querySelector("#btnGo").onclick = doSearch;
     q.onkeydown = (e)=>{ if(e.key==="Enter") doSearch(); };
@@ -170,8 +190,7 @@ function render(){
   }
 
   if(STATE.view==="about"){
-    const tpl = $("#about-tpl").content.cloneNode(true);
-    container.appendChild(tpl);
+    container.appendChild($tpl("about-tpl"));
   }
 
   setActiveTab();
@@ -190,9 +209,12 @@ function renderCards(container, items){
   items.forEach(p=>{
     const node = tpl.content.cloneNode(true);
     const mediaWrap = node.querySelector(".media-wrap");
-    const m = mediaElement(p.media);
-    if(m){ mediaWrap.appendChild(m); }
-    else{
+
+    if (p.media && isImage(p.media)){
+      const img = document.createElement("img");
+      img.loading="lazy"; img.src = p.media; img.alt = "";
+      mediaWrap.appendChild(img);
+    }else{
       mediaWrap.innerHTML = '<div style="padding:20px;color:#93c5fd">پیش‌نمایش در دسترس نیست</div>';
     }
 
@@ -224,12 +246,9 @@ function renderCards(container, items){
 
 // ======== راه‌اندازی ========
 function init(){
-  // تب‌ها
   $$(".tab").forEach(b=> b.onclick = ()=> show(b.dataset.view));
   $("#refreshBtn").onclick = loadData;
-
   render();      // first paint
   loadData();    // fetch data
 }
-
 document.addEventListener("DOMContentLoaded", init);

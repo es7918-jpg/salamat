@@ -4,12 +4,12 @@ body{margin:0;font-family:IRANSans, Vazirmatn, system-ui, -apple-system, Segoe U
   background:#0f172a; color:#e5e7eb;}
 
 :root{
-  --bg:#0f172a;        /* slate-900 */
-  --surface:#111827;   /* gray-900 */
-  --muted:#9ca3af;     /* gray-400 */
-  --brand:#06b6d4;     /* cyan-500 */
-  --brand-2:#22d3ee;   /* cyan-400 */
-  --chip:#1f2937;      /* gray-800 */
+  --bg:#0f172a;
+  --surface:#111827;
+  --muted:#9ca3af;
+  --brand:#06b6d4;
+  --brand-2:#22d3ee;
+  --chip:#1f2937;
   --card:#0b1220;
   --shadow: 0 10px 30px rgba(0,0,0,.35);
 }
